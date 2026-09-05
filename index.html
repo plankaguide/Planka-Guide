@@ -68,7 +68,17 @@
       z-index: 1;
     }
     
-  </style>
+  
+    /* CINEMATIC SPOTLIGHT & CARD FOCUS HIGHLIGHT (DIMMING EFFECT) */
+    .card-spotlight-active {
+      position: relative !important;
+      z-index: 1050 !important;
+      transform: scale(1.03) !important;
+      border-color: var(--gold-deep) !important;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.72), 0 0 45px var(--gold-deep) !important;
+      transition: transform 0.4s ease, box-shadow 0.6s ease, border-color 0.4s ease !important;
+    }
+</style>
   <script>
     if (self === top) {
       var antiClickjack = document.getElementById("antiClickjack");
@@ -895,12 +905,40 @@
       font-weight: 600;
     }
 
-    .selection-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    .selection-ribbon-stage {
+      position: relative;
+      width: 100%;
+    }
+    .selection-ribbon-track {
+      display: flex;
       gap: 1.5rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      padding: 0.5rem 0.25rem 1.5rem 0.25rem;
+      user-select: none;
+    }
+    .selection-ribbon-track.grabbing {
+      cursor: grabbing;
+      scroll-snap-type: none;
+      scroll-behavior: auto;
+    }
+    .selection-ribbon-track::-webkit-scrollbar {
+      height: 6px;
+    }
+    .selection-ribbon-track::-webkit-scrollbar-track {
+      background: var(--border-color);
+      border-radius: 9999px;
+    }
+    .selection-ribbon-track::-webkit-scrollbar-thumb {
+      background: var(--gold-deep);
+      border-radius: 9999px;
     }
     .selection-card {
+      flex: 0 0 380px;
+      max-width: 85vw;
+      scroll-snap-align: start;
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 0.65rem;
@@ -908,11 +946,11 @@
       display: flex;
       flex-direction: column;
       box-shadow: var(--card-shadow);
-      transition: transform 0.2s ease, border-color 0.2s ease;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
       cursor: pointer;
       position: relative;
     }
-    .selection-card:hover {
+.selection-card:hover {
       transform: translateY(-3px);
       border-color: var(--text-main);
       box-shadow: var(--card-shadow-hover);
@@ -1696,9 +1734,9 @@
         </p>
         
         <div class="hero-search-wrap">
-          <input type="text" id="searchInput" oninput="syncSearch(this.value)" placeholder="Поиск по заведению, блюду, шефу, улице..." style="background: #FFFFFF; color: #18181B; border: none; padding: 0.85rem 1.15rem; border-radius: 0.35rem; font-size: 0.8125rem; flex: 1;">
-          <button onclick="applyFilters()" type="button" class="btn btn-dark" style="border-radius: 0.35rem; padding: 0.85rem 1.35rem;">
-            Найти
+          <input type="text" id="searchInput" oninput="syncSearch(this.value)" onkeydown="if(event.key==='Enter') executeHeroSearch()" placeholder="Поиск по заведению, блюду, шефу, улице..." style="background: #FFFFFF; color: #18181B; border: none; padding: 0.85rem 1.15rem; border-radius: 0.35rem; font-size: 0.8125rem; flex: 1;">
+          <button onclick="executeHeroSearch()" type="button" class="btn btn-dark" style="border-radius: 0.35rem; padding: 0.85rem 1.35rem; font-weight: 800;">
+            НАЙТИ
           </button>
         </div>
 
@@ -1793,17 +1831,23 @@
   <section id="selectionSection" style="background: var(--bg-surface); border-bottom: 1px solid var(--border-color); padding: 3.5rem 0;">
     <div class="container">
       
-      <div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+      <div class="flex items-center justify-between" style="margin-bottom: 1.5rem;">
         <div>
           <span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; font-weight: 800; letter-spacing: 0.12em; color: var(--text-muted);">ВЫБОР ИНСПЕКТОРОВ</span>
           <h3 class="font-serif" style="font-size: 1.55rem; font-weight: 900; color: inherit; letter-spacing: -0.01em; margin-top: 0.2rem;">Рекомендации PLANKA GUIDE (Балл ≥ 90)</h3>
         </div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
-          Высший стандарт
+        <div class="flex items-center gap-3">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Высший стандарт</span>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="scrollSelectionRibbon(-1)" class="btn btn-light" style="width: 2.25rem; height: 2.25rem; border-radius: 9999px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 900;" title="Назад">‹</button>
+            <button type="button" onclick="scrollSelectionRibbon(1)" class="btn btn-dark" style="width: 2.25rem; height: 2.25rem; border-radius: 9999px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 900; background: var(--gold-deep); color: #18181B;" title="Вперёд">›</button>
+          </div>
         </div>
       </div>
 
-      <div id="selectionGrid" class="selection-grid"></div>
+      <div class="selection-ribbon-stage">
+        <div id="selectionGrid" class="selection-ribbon-track"></div>
+      </div>
 
     </div>
   </section>
@@ -1847,7 +1891,7 @@
         <div class="flex items-center gap-3" style="flex-wrap: wrap;">
           
           <div style="width: 180px;">
-            <input type="text" id="catalogSearchInput" oninput="syncSearch(this.value)" placeholder="Поиск по реестру..." style="padding: 0.6rem 0.85rem; font-size: 0.75rem;">
+            <input type="text" id="catalogSearchInput" oninput="syncSearch(this.value)" onkeydown="if(event.key==='Enter') executeHeroSearch()" placeholder="Поиск по реестру..." style="padding: 0.6rem 0.85rem; font-size: 0.75rem;">
           </div>
 
           <div style="display: flex; align-items: center; gap: 0.25rem; background: var(--bg-page); border: 1px solid var(--border-color); padding: 0.2rem; border-radius: 0.4rem;">
@@ -2735,8 +2779,17 @@
         <div>
           <span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; font-weight: 800; color: var(--text-muted);">ПАНЕЛЬ ИНСПЕКТОРА PLANKA GUIDE</span>
           <h3 class="font-serif" id="editorModalTitle" style="font-size: 1.25rem; font-weight: 900; color: inherit; margin-top: 0.15rem;">Создание аудита заведения</h3>
-        </div>
+         <span id="formAutoSaveIndicator" style="font-size: 0.625rem; color: #10B981; font-weight: 800; font-family: ui-monospace, monospace; margin-left: 0.5rem; opacity: 0; transition: opacity 0.3s;"></span></div>
         <button onclick="closeAuditEditorModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2.25rem; height: 2.25rem; border-radius: 9999px; cursor: pointer; font-weight: 900;">✕</button>
+      </div>
+
+      <!-- AUTO-SAVE RESTORED BANNER -->
+      <div id="formDraftRestoredBanner" class="hidden" style="background: rgba(197,168,128,0.12); border: 1px solid var(--gold-deep); border-radius: 0.4rem; padding: 0.65rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span>💾</span>
+          <span style="color: var(--text-main); font-weight: 700;">Восстановлен незавершённый черновик (<span id="formDraftRestoreTime">недавно</span>). Данные не потеряны!</span>
+        </div>
+        <button type="button" onclick="clearActiveFormDraft()" class="btn btn-light" style="font-size: 0.6875rem; padding: 0.25rem 0.55rem; color: #DC2626;" title="Очистить черновик и начать с чистого листа">Сбросить черновик</button>
       </div>
 
       <form id="fullAuditForm" style="display: flex; flex-direction: column; gap: 1.35rem; font-size: 0.75rem;">
@@ -3036,7 +3089,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v77') || localStorage.getItem('planka_guide_db_v76') || localStorage.getItem('planka_guide_db_v75') || localStorage.getItem('planka_guide_db_v74') || localStorage.getItem('planka_guide_db_v73') || localStorage.getItem('planka_guide_db_v72') || localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
+      var stored = localStorage.getItem('planka_guide_db_v78') || localStorage.getItem('planka_guide_db_v76') || localStorage.getItem('planka_guide_db_v75') || localStorage.getItem('planka_guide_db_v74') || localStorage.getItem('planka_guide_db_v73') || localStorage.getItem('planka_guide_db_v72') || localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
       if (stored) {
         var parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -3139,7 +3192,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v77', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v78', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -3900,13 +3953,31 @@
       var citySelect = document.getElementById('cityFilter');
       var city = citySelect ? citySelect.value : 'all';
 
+      var searchInput = document.getElementById('searchInput');
+      var search = searchInput ? (searchInput.value || '').toLowerCase().trim() : '';
+
       var topVenues = venues.filter(function(v) { 
         var isPub = isVenuePubliclyVisible(v);
         var matchScore = (v.total_score >= 90);
         var matchCity = (city === 'all') || (v.city === city);
         var matchFormat = (currentFormatFilter === 'all') || (v.format === currentFormatFilter);
         var matchPrice = (currentPriceFilter === 'all') || (v.price_tier === currentPriceFilter);
-        return isPub && matchScore && matchCity && matchFormat && matchPrice; 
+
+        var tagsStr = (v.vibe_tags || []).join(' ').toLowerCase();
+        var matchesSearch = !search || 
+                            v.name.toLowerCase().indexOf(search) !== -1 || 
+                            v.format.toLowerCase().indexOf(search) !== -1 || 
+                            (v.signature_dish && v.signature_dish.toLowerCase().indexOf(search) !== -1) ||
+                            (v.chef && v.chef.toLowerCase().indexOf(search) !== -1) ||
+                            (v.concept && v.concept.toLowerCase().indexOf(search) !== -1) ||
+                            (v.dish_review && v.dish_review.toLowerCase().indexOf(search) !== -1) ||
+                            (v.full_review && v.full_review.toLowerCase().indexOf(search) !== -1) ||
+                            (tagsStr && tagsStr.indexOf(search) !== -1) ||
+                            v.city.toLowerCase().indexOf(search) !== -1 ||
+                            (v.district && v.district.toLowerCase().indexOf(search) !== -1) ||
+                            (v.address && v.address.toLowerCase().indexOf(search) !== -1);
+
+        return isPub && matchScore && matchCity && matchFormat && matchPrice && matchesSearch; 
       });
 
       if (topVenues.length === 0) {
@@ -5352,22 +5423,218 @@
     
 
 
+    
+    // SELECTION RIBBON CONTROLS & CAROUSEL NAVIGATION
+    function scrollSelectionRibbon(direction) {
+      var track = document.getElementById('selectionGrid');
+      if (track) {
+        track.scrollBy({ left: direction * 380, behavior: 'smooth' });
+      }
+    }
+
+    // SEARCH WITH AUTO-SCROLL AND SPOTLIGHT DIMMING
+    function executeHeroSearch() {
+      var sInp = document.getElementById('searchInput');
+      var val = sInp ? (sInp.value || '').trim() : '';
+
+      applyFilters();
+
+      if (!val) return;
+
+      setTimeout(function() {
+        var targetCard = document.querySelector('#selectionGrid .selection-card, #venuesRibbonTrack .card, #venuesGridView .card');
+        if (targetCard) {
+          targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          applyCardSpotlight(targetCard);
+        } else {
+          var noRes = document.getElementById('noResults');
+          if (noRes) noRes.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+    }
+
+    function applyCardSpotlight(cardEl) {
+      if (!cardEl) return;
+      var prev = document.querySelectorAll('.card-spotlight-active');
+      for (var i = 0; i < prev.length; i++) prev[i].classList.remove('card-spotlight-active');
+
+      cardEl.classList.add('card-spotlight-active');
+      setTimeout(function() {
+        cardEl.classList.remove('card-spotlight-active');
+      }, 3000);
+    }
+
+    // ==========================================
+    // FORM DRAFT CONTINUOUS AUTO-SAVE ENGINE
+    // ==========================================
+    const FORM_DRAFT_KEY = 'planka_active_form_draft';
+
+    function saveActiveFormDraft() {
+      try {
+        var formEl = document.getElementById('fullAuditForm');
+        if (!formEl) return;
+
+        var sliders = document.querySelectorAll('#granularChecklistFields input[type="range"]');
+        var sliderVals = {};
+        for (var s = 0; s < sliders.length; s++) {
+          if (sliders[s].id) sliderVals[sliders[s].id] = sliders[s].value;
+        }
+
+        var draft = {
+          timestamp: Date.now(),
+          editVenueId: (document.getElementById('editVenueId') || {}).value || '',
+          name: (document.getElementById('formName') || {}).value || '',
+          format: (document.getElementById('formFormat') || {}).value || '',
+          city: (document.getElementById('formCity') || {}).value || '',
+          district: (document.getElementById('formDistrict') || {}).value || '',
+          address: (document.getElementById('formAddress') || {}).value || '',
+          avg_check: (document.getElementById('formCheck') || {}).value || '',
+          segment: (document.getElementById('formSegment') || {}).value || '',
+          chef: (document.getElementById('formChef') || {}).value || '',
+          phone: (document.getElementById('formPhone') || {}).value || '',
+          booking_url: (document.getElementById('formBookingUrl') || {}).value || '',
+          no_booking: (document.getElementById('formNoBooking') || {}).checked || false,
+          dish: (document.getElementById('formDish') || {}).value || '',
+          dish_review: (document.getElementById('formDishReview') || {}).value || '',
+          full_review: (document.getElementById('formFullReview') || {}).value || '',
+          private_notes: (document.getElementById('formPrivateNotes') || {}).value || '',
+          urban_notes: (document.getElementById('formUrbanNotes') || {}).value || '',
+          ergonomics_notes: (document.getElementById('formErgonomicsNotes') || {}).value || '',
+          pros: (document.getElementById('formPros') || {}).value || '',
+          cons: (document.getElementById('formCons') || {}).value || '',
+          vibe_tags: (document.getElementById('formVibeTags') || {}).value || '',
+          sliders: sliderVals,
+          photos: currentEditingPhotos || [],
+          private_photos: currentEditingPrivatePhotos || []
+        };
+
+        if (draft.name || draft.city || draft.dish || draft.photos.length > 0 || Object.keys(sliderVals).length > 0) {
+          localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
+          var indEl = document.getElementById('formAutoSaveIndicator');
+          if (indEl) {
+            indEl.innerText = '💾 Черновик сохранён ' + new Date().toLocaleTimeString('ru-RU');
+            indEl.style.opacity = '1';
+            setTimeout(function() { if (indEl) indEl.style.opacity = '0'; }, 2000);
+          }
+        }
+      } catch(e) {
+        console.warn('Auto-save error:', e);
+      }
+    }
+
+    function restoreActiveFormDraft() {
+      try {
+        var raw = localStorage.getItem(FORM_DRAFT_KEY);
+        if (!raw) return false;
+        var draft = JSON.parse(raw);
+        if (!draft) return false;
+
+        var setText = function(id, val) {
+          var el = document.getElementById(id);
+          if (el && val !== undefined && val !== null) el.value = val;
+        };
+
+        setText('editVenueId', draft.editVenueId);
+        setText('formName', draft.name);
+        setText('formFormat', draft.format);
+        setText('formCity', draft.city);
+        setText('formDistrict', draft.district);
+        setText('formAddress', draft.address);
+        setText('formCheck', draft.avg_check);
+        setText('formSegment', draft.segment);
+        setText('formChef', draft.chef);
+        setText('formPhone', draft.phone);
+        setText('formBookingUrl', draft.booking_url);
+        if (document.getElementById('formNoBooking')) {
+          document.getElementById('formNoBooking').checked = !!draft.no_booking;
+        }
+        setText('formDish', draft.dish);
+        setText('formDishReview', draft.dish_review);
+        setText('formFullReview', draft.full_review);
+        setText('formPrivateNotes', draft.private_notes);
+        setText('formUrbanNotes', draft.urban_notes);
+        setText('formErgonomicsNotes', draft.ergonomics_notes);
+        setText('formPros', draft.pros);
+        setText('formCons', draft.cons);
+        setText('formVibeTags', draft.vibe_tags);
+
+        if (draft.sliders) {
+          for (var sId in draft.sliders) {
+            var sEl = document.getElementById(sId);
+            if (sEl) sEl.value = draft.sliders[sId];
+          }
+        }
+
+        if (draft.photos && Array.isArray(draft.photos)) {
+          currentEditingPhotos = draft.photos;
+          renderFormPhotoPreviews();
+        }
+        if (draft.private_photos && Array.isArray(draft.private_photos)) {
+          currentEditingPrivatePhotos = draft.private_photos;
+          renderFormPrivatePhotoPreviews();
+        }
+
+        recalcGranularScore();
+
+        var restoreBanner = document.getElementById('formDraftRestoredBanner');
+        if (restoreBanner) {
+          restoreBanner.classList.remove('hidden');
+          var timeEl = document.getElementById('formDraftRestoreTime');
+          if (timeEl) {
+            timeEl.innerText = draft.timestamp ? new Date(draft.timestamp).toLocaleTimeString('ru-RU') : 'недавно';
+          }
+        }
+        return true;
+      } catch(e) {
+        console.warn('Restore draft error:', e);
+        return false;
+      }
+    }
+
+    function clearActiveFormDraft() {
+      localStorage.removeItem(FORM_DRAFT_KEY);
+      var restoreBanner = document.getElementById('formDraftRestoredBanner');
+      if (restoreBanner) restoreBanner.classList.add('hidden');
+      var formEl = document.getElementById('fullAuditForm');
+      if (formEl) formEl.reset();
+      currentEditingPhotos = [];
+      currentEditingPrivatePhotos = [];
+      renderFormPhotoPreviews();
+      renderFormPrivatePhotoPreviews();
+      renderGranularChecklist();
+      recalcGranularScore();
+      alert('Черновик формы очищен.');
+    }
+
     function openNewAuditModal() {
       var editIdEl = document.getElementById('editVenueId');
       if (editIdEl) editIdEl.value = '';
       var titleEl = document.getElementById('editorModalTitle');
       if (titleEl) titleEl.innerText = 'Создание аудита заведения';
-      var formEl = document.getElementById('fullAuditForm');
-      if (formEl) formEl.reset();
-      currentEditingPhotos = [];
-      currentEditingPrivatePhotos = [];
-      currentEditingVideo = '';
-      updateVideoPreviewUI('');
-      renderFormPhotoPreviews();
-      renderFormPrivatePhotoPreviews();
+
       renderGranularChecklist();
       renderInspectorTimers();
+
+      var restored = restoreActiveFormDraft();
+      if (!restored) {
+        var formEl = document.getElementById('fullAuditForm');
+        if (formEl) formEl.reset();
+        currentEditingPhotos = [];
+        currentEditingPrivatePhotos = [];
+        currentEditingVideo = '';
+        renderFormPhotoPreviews();
+        renderFormPrivatePhotoPreviews();
+        recalcGranularScore();
+      }
       openModal('auditEditorModal');
+
+      // Attach auto-save listener on form inputs
+      var fullForm = document.getElementById('fullAuditForm');
+      if (fullForm && !fullForm.dataset.autosaveAttached) {
+        fullForm.dataset.autosaveAttached = 'true';
+        fullForm.addEventListener('input', saveActiveFormDraft);
+        fullForm.addEventListener('change', saveActiveFormDraft);
+      }
     }
 
     function editCurrentModalVenue() {
@@ -5532,6 +5799,7 @@
         saveDB();
         closeAuditEditorModal();
         updateStats();
+        localStorage.removeItem(FORM_DRAFT_KEY);
         alert('📁 Аудит «' + nameVal + '» успешно сохранён в ЧЕРНОВИКИ на устройстве.');
         return;
       }
@@ -5652,7 +5920,8 @@
       updateStats();
 
       if (total >= 75) {
-        alert('🚀 Отчёт по заведению «' + nameVal + '» (' + total + ' б., ' + grade + ') успешно отправлен на МОДЕРАЦИЮ в облачную базу данных!\n\nПосле подтверждения модератором карточка мгновенно появится в открытом гиде.');
+        localStorage.removeItem(FORM_DRAFT_KEY);
+      alert('🚀 Отчёт по заведению «' + nameVal + '» (' + total + ' б., ' + grade + ') успешно отправлен на МОДЕРАЦИЮ в облачную базу данных!\n\nПосле подтверждения модератором карточка мгновенно появится в открытом гиде.');
       } else {
         alert('📁 Отчёт по заведению «' + nameVal + '» (' + total + ' б.) сохранён в ЗАКРЫТЫЙ АРХИВ базы данных.\n\nПубликация заблокирована, так как итоговый балл ниже порога 75 баллов.');
       }
@@ -11190,7 +11459,7 @@
           var draftList = venues.filter(function(v) { return v.status === 'draft'; });
           var merged = draftList.concat(remoteVenues);
           venues = merged;
-          safeSetItem('planka_guide_db_v77', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v78', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
