@@ -3089,34 +3089,67 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v78') || localStorage.getItem('planka_guide_db_v76') || localStorage.getItem('planka_guide_db_v75') || localStorage.getItem('planka_guide_db_v74') || localStorage.getItem('planka_guide_db_v73') || localStorage.getItem('planka_guide_db_v72') || localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
+      var stored = localStorage.getItem('planka_guide_db_v79') || 
+                   localStorage.getItem('planka_guide_db_v78') || 
+                   localStorage.getItem('planka_guide_db_v77') || 
+                   localStorage.getItem('planka_guide_db_v76') || 
+                   localStorage.getItem('planka_guide_db_v75') || 
+                   localStorage.getItem('planka_guide_db_v74') || 
+                   localStorage.getItem('planka_guide_db_v73') || 
+                   localStorage.getItem('planka_guide_db_v72') || 
+                   localStorage.getItem('planka_guide_db_v71') || 
+                   localStorage.getItem('planka_guide_db_v70') || 
+                   localStorage.getItem('planka_guide_db_v69') || 
+                   localStorage.getItem('planka_guide_db_v68');
       if (stored) {
         var parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          var existingMap = {};
+          var existingNameMap = {};
+          var existingIdMap = {};
           for (var pi = 0; pi < parsed.length; pi++) {
-            existingMap[parsed[pi].id] = parsed[pi];
+            var pItem = parsed[pi];
+            if (!pItem) continue;
+            if (pItem.id) existingIdMap[String(pItem.id)] = pItem;
+            if (pItem.name) existingNameMap[pItem.name.toLowerCase().trim()] = pItem;
           }
+
           var mergedList = [];
           for (var vi = 0; vi < initialVenues.length; vi++) {
             var baseV = initialVenues[vi];
-            if (existingMap[baseV.id]) {
-              var saved = existingMap[baseV.id];
-              saved.photos = baseV.photos;
-              saved.video = baseV.video;
-              mergedList.push(saved);
-              delete existingMap[baseV.id];
+            var nName = baseV.name.toLowerCase().trim();
+            var matched = existingIdMap[String(baseV.id)] || existingNameMap[nName];
+
+            if (matched) {
+              // Upgrade with Supabase/Storage photos and updated info
+              if (baseV.photos && (!matched.photos || matched.photos.length === 0)) {
+                matched.photos = baseV.photos;
+              }
+              mergedList.push(matched);
+              if (matched.id) delete existingIdMap[String(matched.id)];
+              if (matched.name) delete existingNameMap[matched.name.toLowerCase().trim()];
             } else {
               mergedList.push(baseV);
             }
           }
-          for (var k in existingMap) {
-            mergedList.unshift(existingMap[k]);
+
+          // Add newly approved or pending custom venues from local cache
+          var remainingSeen = {};
+          for (var k in existingIdMap) {
+            var rem = existingIdMap[k];
+            var remName = (rem.name || '').toLowerCase().trim();
+            if (remName && !remainingSeen[remName]) {
+              remainingSeen[remName] = true;
+              mergedList.unshift(rem);
+            }
           }
-          venues = mergedList;
+
+          // Guarantee zero duplicate cards
+          venues = deduplicateVenues(mergedList);
         }
       }
-    } catch(e) {}
+    } catch(e) {
+      console.warn('Startup merge notice:', e);
+    }
 
     var isAdmin = false;
     try {
@@ -3192,7 +3225,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v78', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v79', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -3842,6 +3875,32 @@
     }
 
     // Hero Slide Carousel
+    
+    // DEDUPLICATION ENGINE: Eliminates duplicates by unique venue name and ID
+    function deduplicateVenues(venueList) {
+      if (!Array.isArray(venueList)) return [];
+      var nameMap = {};
+      var idMap = {};
+      var result = [];
+
+      for (var i = 0; i < venueList.length; i++) {
+        var v = venueList[i];
+        if (!v || !v.name) continue;
+        var normName = v.name.toLowerCase().trim();
+        var sId = String(v.id || '');
+
+        // If duplicate detected by name or ID, skip duplicate entry
+        if (nameMap[normName] || (sId && idMap[sId])) {
+          continue;
+        }
+
+        nameMap[normName] = true;
+        if (sId) idMap[sId] = true;
+        result.push(v);
+      }
+      return result;
+    }
+
     // UNIFIED STATUS & VISIBILITY ENGINE: Checks approved status & 75-score threshold
     function isVenuePubliclyVisible(v) {
       if (!v) return false;
@@ -11457,9 +11516,10 @@
           });
 
           var draftList = venues.filter(function(v) { return v.status === 'draft'; });
-          var merged = draftList.concat(remoteVenues);
-          venues = merged;
-          safeSetItem('planka_guide_db_v78', JSON.stringify(venues));
+          // Deduplicate remote venues and local drafts by name and ID
+          var combined = remoteVenues.concat(draftList);
+          venues = deduplicateVenues(combined);
+          safeSetItem('planka_guide_db_v79', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
