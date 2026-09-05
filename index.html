@@ -3089,7 +3089,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v79') || 
+      var stored = localStorage.getItem('planka_guide_db_v80') || 
                    localStorage.getItem('planka_guide_db_v78') || 
                    localStorage.getItem('planka_guide_db_v77') || 
                    localStorage.getItem('planka_guide_db_v76') || 
@@ -3225,7 +3225,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v79', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v80', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -3456,24 +3456,28 @@
     function closeSuggestModal() {
       closeModal('suggestModal');
     }
-    function handleSuggestSubmit(e) {
+    var cloudSuggestions = [];
+
+    async function handleSuggestSubmit(e) {
       e.preventDefault();
-      
-      // Honeypot check (anti-bot)
+
+      // 1. Anti-spam Honeypot Check
       var hp = document.getElementById('sugHoneypot');
       if (hp && hp.value.trim().length > 0) {
         console.warn('Bot submission blocked.');
         closeSuggestModal();
+        alert('Заявка успешно отправлена!');
         return;
       }
 
-      // Rate limiting (60 sec)
+      // 2. Cooldown Rate Limiting (60 seconds)
+      var lastSuggest = parseInt(localStorage.getItem('planka_last_suggest_ts'), 10) || 0;
       var now = Date.now();
-      if (now - lastSuggestTime < 60000) {
-        alert('Вы недавно отправляли заявку. Пожалуйста, подождите 1 минуту перед повторной отправкой.');
+      if (now - lastSuggest < 60000) {
+        var waitSec = Math.ceil((60000 - (now - lastSuggest)) / 1000);
+        alert('Вы недавно отправляли предложение. В целях защиты от спама следующую заявку можно отправить через ' + waitSec + ' сек.');
         return;
       }
-      lastSuggestTime = now;
 
       var name = document.getElementById('sugName').value.trim();
       var city = document.getElementById('sugCity').value.trim();
@@ -3481,23 +3485,72 @@
       var addr = document.getElementById('sugAddress').value.trim();
       var notes = document.getElementById('sugNotes').value.trim();
 
+      // 3. Input Validation & Sanity
+      if (name.length < 2 || name.length > 100) {
+        alert('Пожалуйста, укажите корректное название заведения (от 2 до 100 символов).');
+        return;
+      }
+      if (city.length < 2 || city.length > 50) {
+        alert('Пожалуйста, укажите город (от 2 до 50 символов).');
+        return;
+      }
+
+      var submitBtn = e.target.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.innerText = 'Отправка...';
+        submitBtn.disabled = true;
+      }
+
+      var todayStr = new Date().toLocaleString('ru-RU');
+      var localId = Date.now();
+
+      // Send to Supabase Cloud Suggestions Table
+      if (supabaseClient) {
+        try {
+          var payload = {
+            name: name,
+            city: city,
+            format: fmt,
+            address: addr,
+            notes: notes
+          };
+          var res = await supabaseClient.from('suggestions').insert([payload]);
+          if (res.error) {
+            console.warn('Supabase suggestion insert notice:', res.error.message);
+          } else {
+            console.log('✓ Suggestion successfully saved to Supabase');
+          }
+        } catch(netErr) {
+          console.warn('Supabase suggestion network notice:', netErr);
+        }
+      }
+
+      if (submitBtn) {
+        submitBtn.innerText = 'Отправить в комиссию аудита';
+        submitBtn.disabled = false;
+      }
+
+      // Record rate limit timestamp
+      localStorage.setItem('planka_last_suggest_ts', now.toString());
+
+      // Save local backup
       var newSuggestion = {
-        id: Date.now(),
+        id: localId,
         name: name,
         city: city,
         format: fmt,
         address: addr,
         notes: notes,
-        timestamp: new Date().toLocaleString('ru-RU')
+        mentions_count: 1,
+        timestamp: todayStr
       };
-
       guestSuggestions.unshift(newSuggestion);
       try {
         safeSetItem('planka_suggested_venues', JSON.stringify(guestSuggestions));
       } catch(err) {}
 
       updateSuggestionsBadge();
-      alert('Заявка на аудит заведения «' + name + '» (' + city + ') успешно принята! Инспекторы PLANKA GUIDE включат локацию в график тайных визитов.');
+      alert('🌟 Заявка на аудит заведения «' + name + '» (' + city + ') успешно отправлена в комиссию PLANKA GUIDE!\n\nИнспекторы включат локацию в график тайных визитов.');
       closeSuggestModal();
       document.getElementById('sugName').value = '';
       document.getElementById('sugCity').value = '';
@@ -3505,83 +3558,142 @@
       document.getElementById('sugNotes').value = '';
     }
 
-    function updateSuggestionsBadge() {
+    async function updateSuggestionsBadge() {
       var badgeDesk = document.getElementById('adminSugCountBadgeDesk');
-      if (badgeDesk) badgeDesk.innerText = '(' + guestSuggestions.length + ')';
       var badgeMob = document.getElementById('adminSugCountBadgeMobile');
-      if (badgeMob) badgeMob.innerText = '(' + guestSuggestions.length + ')';
+      var count = guestSuggestions.length;
+
+      if (isAdmin && supabaseClient) {
+        try {
+          var countRes = await supabaseClient
+            .from('suggestions')
+            .select('id', { count: 'exact', head: true });
+          if (!countRes.error && countRes.count !== null) {
+            count = countRes.count;
+          }
+        } catch(e) {}
+      }
+
+      if (badgeDesk) badgeDesk.innerText = '(' + count + ')';
+      if (badgeMob) badgeMob.innerText = '(' + count + ')';
     }
 
-    function openSuggestionsInboxModal() {
+    async function openSuggestionsInboxModal() {
       var list = document.getElementById('suggestionsInboxList');
       if (!list) return;
 
-      if (guestSuggestions.length === 0) {
-        list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.8125rem;">Входящих заявок от гостей пока нет.</div>';
-      } else {
-        var html = '';
-
-
-        for (var i = 0; i < guestSuggestions.length; i++) {
-          var s = guestSuggestions[i];
-          html += '<div style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; display: flex; justify-content: space-between; align-items: start; gap: 1rem;">' +
-            '<div>' +
-              '<div class="flex items-center gap-2" style="margin-bottom: 0.25rem;">' +
-                '<strong style="font-size: 0.9375rem; color: var(--text-main);">' + s.name + '</strong>' +
-                '<span style="font-size: 0.625rem; background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 0.15rem 0.45rem; border-radius: 0.25rem;">' + s.format + '</span>' +
-                '<span style="font-size: 0.6875rem; color: var(--text-muted);">' + s.city + (s.address ? ', ' + s.address : '') + '</span>' +
-              '</div>' +
-              '<p style="font-size: 0.75rem; color: var(--text-body); line-height: 1.4; margin-bottom: 0.35rem;">«' + (s.notes || 'Без комментария') + '»</p>' +
-              '<span style="font-size: 0.5625rem; font-family: ui-monospace, monospace; color: var(--text-muted);">' + s.timestamp + '</span>' +
-            '</div>' +
-            '<div class="flex flex-col gap-1.5" style="min-width: 120px;">' +
-              '<button type="button" onclick="convertSuggestionToAudit(' + s.id + ')" class="btn btn-dark" style="padding: 0.4rem 0.65rem; font-size: 0.625rem;">+ В аудит</button>' +
-              '<button type="button" onclick="deleteSuggestion(' + s.id + ')" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.625rem; color: #DC2626;">Удалить</button>' +
-            '</div>' +
-          '</div>';
-        }
-        list.innerHTML = html;
-      }
+      list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.8125rem;">Загрузка предложений гостей...</div>';
       openModal('suggestionsInboxModal');
+
+      var items = guestSuggestions;
+
+      if (isAdmin && supabaseClient) {
+        try {
+          // Automatic ranking: Sort by mentions_count (popularity) first, then by recency
+          var res = await supabaseClient
+            .from('suggestions')
+            .select('*')
+            .order('mentions_count', { ascending: false })
+            .order('created_at', { ascending: false });
+
+          if (!res.error && Array.isArray(res.data) && res.data.length > 0) {
+            cloudSuggestions = res.data;
+            items = cloudSuggestions;
+          }
+        } catch(e) {
+          console.warn('Could not fetch cloud suggestions:', e);
+        }
+      }
+
+      if (items.length === 0) {
+        list.innerHTML = '<div style="padding: 2.5rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.8125rem;">Входящих заявок от гостей пока нет.</div>';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < items.length; i++) {
+        var s = items[i];
+        var mentions = s.mentions_count || 1;
+        var isPopular = mentions > 1;
+        var timeStr = s.created_at ? (s.created_at.split('T')[0] + ' ' + (s.created_at.split('T')[1] || '').substring(0, 5)) : (s.timestamp || 'Недавно');
+
+        html += '<div style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1.15rem; display: flex; justify-content: space-between; align-items: start; gap: 1rem; flex-wrap: wrap;">' +
+          '<div style="flex: 1; min-width: 260px;">' +
+            '<div class="flex items-center gap-2" style="margin-bottom: 0.35rem; flex-wrap: wrap;">' +
+              '<strong style="font-size: 1.05rem; color: var(--text-main); font-family: Playfair Display, Georgia, serif;">' + escapeHTML(s.name) + '</strong>' +
+              '<span style="font-size: 0.625rem; background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 0.15rem 0.45rem; border-radius: 0.25rem; font-weight: 700;">' + escapeHTML(s.format) + '</span>' +
+              (isPopular ? '<span style="font-size: 0.625rem; background: rgba(197,168,128,0.2); border: 1px solid var(--gold-deep); color: var(--gold-deep); padding: 0.15rem 0.5rem; border-radius: 9999px; font-weight: 800;">🔥 ТОП ЗАПРОС: ' + mentions + ' голоса</span>' : '') +
+              '<span style="font-size: 0.6875rem; color: var(--text-muted);">' + escapeHTML(s.city) + (s.address ? ', ' + escapeHTML(s.address) : '') + '</span>' +
+            '</div>' +
+            '<p style="font-size: 0.8125rem; color: var(--text-body); line-height: 1.5; margin-bottom: 0.45rem; white-space: pre-line;">«' + escapeHTML(s.notes || 'Без комментария') + '»</p>' +
+            '<span style="font-size: 0.5625rem; font-family: ui-monospace, monospace; color: var(--text-muted);">Поступило: ' + timeStr + '</span>' +
+          '</div>' +
+          '<div class="flex flex-col gap-1.5" style="min-width: 140px;">' +
+            '<button type="button" onclick="convertSuggestionToAuditByIndex(' + i + ')" class="btn btn-dark" style="padding: 0.45rem 0.65rem; font-size: 0.6875rem; font-weight: 800; background: var(--gold-deep); color: #18181B;">+ Взять в аудит</button>' +
+            '<button type="button" onclick="deleteSuggestionByIndex(' + i + ')" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.625rem; color: #DC2626;">Удалить заявку</button>' +
+          '</div>' +
+        '</div>';
+      }
+      list.innerHTML = html;
     }
 
     function closeSuggestionsInboxModal() {
       closeModal('suggestionsInboxModal');
     }
 
-    function deleteSuggestion(sugId) {
-      guestSuggestions = guestSuggestions.filter(function(s){ return s.id !== sugId; });
+    async function deleteSuggestionByIndex(idx) {
+      var item = (cloudSuggestions.length > 0 ? cloudSuggestions : guestSuggestions)[idx];
+      if (!item) return;
+      if (!confirm('Удалить предложение заведения «' + item.name + '»?')) return;
+
+      if (item.id && typeof item.id === 'string' && supabaseClient && isModerator) {
+        try {
+          await supabaseClient.from('suggestions').delete().eq('id', item.id);
+        } catch(e) {
+          console.warn('Cloud delete error:', e);
+        }
+      }
+
+      guestSuggestions = guestSuggestions.filter(function(s){ return String(s.id) !== String(item.id); });
+      cloudSuggestions = cloudSuggestions.filter(function(s){ return String(s.id) !== String(item.id); });
       try {
         safeSetItem('planka_suggested_venues', JSON.stringify(guestSuggestions));
       } catch(err) {}
+
       updateSuggestionsBadge();
       openSuggestionsInboxModal();
     }
 
-    function convertSuggestionToAudit(sugId) {
-      var s = guestSuggestions.find(function(item){ return item.id === sugId; });
+    function convertSuggestionToAuditByIndex(idx) {
+      var s = (cloudSuggestions.length > 0 ? cloudSuggestions : guestSuggestions)[idx];
       if (!s) return;
 
       closeSuggestionsInboxModal();
       openNewAuditModal();
       
-      document.getElementById('formName').value = s.name;
-      document.getElementById('formCity').value = s.city;
-      document.getElementById('formFormat').value = s.format || 'Fine Dining';
-      document.getElementById('formAddress').value = s.address || '';
-      document.getElementById('formDishReview').value = s.notes || '';
+      var setVal = function(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.value = val || '';
+      };
+
+      setVal('formName', s.name);
+      setVal('formCity', s.city);
+      setVal('formFormat', s.format || 'Ресторан & Fine Dining');
+      setVal('formAddress', s.address || '');
+      setVal('formDishReview', s.notes || '');
       renderGranularChecklist();
     }
 
     function syncSuggestionsToGoogleSheet() {
-      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(guestSuggestions, null, 2));
+      var itemsToExport = cloudSuggestions.length > 0 ? cloudSuggestions : guestSuggestions;
+      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(itemsToExport, null, 2));
       var dl = document.createElement('a');
       dl.setAttribute("href", dataStr);
       dl.setAttribute("download", "guest_suggestions.json");
       document.body.appendChild(dl);
       dl.click();
       dl.remove();
-      alert('Заявки гостей выгружены в файл guest_suggestions.json для сохранения в Google Таблицу!');
+      alert('Заявки гостей выгружены в файл guest_suggestions.json!');
     }
 
     // SHARE & QR CODE MODAL
@@ -11519,7 +11631,7 @@
           // Deduplicate remote venues and local drafts by name and ID
           var combined = remoteVenues.concat(draftList);
           venues = deduplicateVenues(combined);
-          safeSetItem('planka_guide_db_v79', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v80', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
