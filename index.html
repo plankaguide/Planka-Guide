@@ -6,7 +6,7 @@
   <title>PLANKA GUIDE — Независимый ресторанный гид и стандарт качества</title>
   
   <!-- SECURITY META HEADERS & CSP -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; connect-src 'self' https: data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; connect-src 'self' https: data: blob: https://*.supabase.co; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
@@ -100,7 +100,7 @@
   <!-- LEAFLET MAP ENGINE WITH SRI -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
   <style>
     /* CSS VARIABLES: DUAL LUXURY PALETTE */
@@ -2248,7 +2248,7 @@
         <button type="button" id="tabBtnModerator" onclick="switchAuthTab('moderator')" class="btn btn-light" style="flex: 1; font-size: 0.75rem; padding: 0.45rem;">🛡 Модератор</button>
       </div>
 
-      <!-- Inspector Auth Form (Zero plaintext passwords in code - SHA-256 hash verified) -->
+      <!-- Inspector Auth Form -->
       <form id="inspectorAuthForm" onsubmit="handleInspectorPinSubmit(event)">
         <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.85rem;">Введите код доступа для полевого аудита заведений:</p>
         <input type="password" id="pinInput" placeholder="Введите PIN аудитора" style="text-align: center; letter-spacing: 0.1em; font-size: 1rem; font-weight: 800; margin-bottom: 0.5rem;" autocomplete="off">
@@ -3036,7 +3036,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v76') || localStorage.getItem('planka_guide_db_v73') || localStorage.getItem('planka_guide_db_v72') || localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
+      var stored = localStorage.getItem('planka_guide_db_v77') || localStorage.getItem('planka_guide_db_v76') || localStorage.getItem('planka_guide_db_v75') || localStorage.getItem('planka_guide_db_v74') || localStorage.getItem('planka_guide_db_v73') || localStorage.getItem('planka_guide_db_v72') || localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
       if (stored) {
         var parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -3139,7 +3139,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v76', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v77', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -3789,7 +3789,6 @@
     }
 
     // Hero Slide Carousel
-    
     // UNIFIED STATUS & VISIBILITY ENGINE: Checks approved status & 75-score threshold
     function isVenuePubliclyVisible(v) {
       if (!v) return false;
@@ -3968,6 +3967,159 @@
         '</div>';
       }
       container.innerHTML = html;
+    }
+
+    // Render Catalog
+    
+    // OFFLINE & UNBLOCKED LUXURY SVG PLACEHOLDER GENERATOR FOR RUSSIAN NETWORKS
+    function getVenueFallbackSvg(name, format, city) {
+      var cleanName = (name || 'PLANKA GUIDE').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      var cleanCity = (city || '').replace(/&/g, '&amp;');
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">' +
+        '<defs>' +
+          '<linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+            '<stop offset="0%" stop-color="#241E19"/>' +
+            '<stop offset="100%" stop-color="#14110E"/>' +
+          '</linearGradient>' +
+        '</defs>' +
+        '<rect width="100%" height="100%" fill="url(#bgGrad)"/>' +
+        '<rect x="24" y="24" width="752" height="452" rx="10" fill="none" stroke="#8C6D37" stroke-width="1.5" stroke-opacity="0.35"/>' +
+        '<text x="400" y="235" text-anchor="middle" font-family="Playfair Display, Georgia, serif" font-size="28" font-weight="900" fill="#FAF8F5" letter-spacing="0.02em">' + cleanName + '</text>' +
+        '<text x="400" y="275" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#C5A880" text-transform="uppercase" letter-spacing="0.12em">' + (cleanCity ? cleanCity + ' • ' : '') + 'PLANKA GUIDE</text>' +
+      '</svg>';
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    function renderVenues() {
+      var ribbonTrack = document.getElementById('venuesRibbonTrack');
+      var gridContainer = document.getElementById('venuesGridView');
+      var noResults = document.getElementById('noResults');
+
+      var searchInput = document.getElementById('searchInput');
+      var search = searchInput ? (searchInput.value || '').toLowerCase().trim() : '';
+      var citySelect = document.getElementById('cityFilter');
+      var city = citySelect ? citySelect.value : 'all';
+
+      var filtered = [];
+      for (var i = 0; i < venues.length; i++) {
+        var v = venues[i];
+        var isDraft = (v.status === 'draft');
+        if (currentDraftsOnlyFilter) {
+          if (!isDraft) continue;
+        } else {
+          if (isDraft && !isAdmin) continue;
+        }
+        if (currentFavoritesOnlyFilter && !isFavorite(v.id)) continue;
+
+        var tagsStr = (v.vibe_tags || []).join(' ').toLowerCase();
+        var matchesSearch = !search || 
+                            v.name.toLowerCase().indexOf(search) !== -1 || 
+                            v.format.toLowerCase().indexOf(search) !== -1 || 
+                            (v.signature_dish && v.signature_dish.toLowerCase().indexOf(search) !== -1) ||
+                            (v.chef && v.chef.toLowerCase().indexOf(search) !== -1) ||
+                            (v.concept && v.concept.toLowerCase().indexOf(search) !== -1) ||
+                            (tagsStr && tagsStr.indexOf(search) !== -1) ||
+                            v.city.toLowerCase().indexOf(search) !== -1 ||
+                            (v.district && v.district.toLowerCase().indexOf(search) !== -1) ||
+                            (v.address && v.address.toLowerCase().indexOf(search) !== -1);
+        var matchesCity = (city === 'all') || (v.city === city);
+        var matchesFormat = (currentFormatFilter === 'all') || (v.format === currentFormatFilter);
+        var matchesPrice = (currentPriceFilter === 'all') || (v.price_tier === currentPriceFilter);
+        var matchesQuality = !currentQualityFilter || (v.total_score >= 90);
+        if (matchesSearch && matchesCity && matchesFormat && matchesPrice && matchesQuality) {
+          filtered.push(v);
+        }
+      }
+
+      if (currentSortMode === 'score_desc') filtered.sort(function(a, b) { return b.total_score - a.total_score; });
+      if (currentSortMode === 'score_asc') filtered.sort(function(a, b) { return a.total_score - b.total_score; });
+      if (currentSortMode === 'check_asc') filtered.sort(function(a, b) { return a.avg_check - b.avg_check; });
+      if (currentSortMode === 'check_desc') filtered.sort(function(a, b) { return b.avg_check - a.avg_check; });
+      if (currentSortMode === 'value_desc') filtered.sort(function(a, b) { return (b.value_score || 0) - (a.value_score || 0); });
+
+      var badgeEl = document.getElementById('resultsCountBadge');
+      if (badgeEl) badgeEl.innerText = filtered.length;
+
+      if (filtered.length === 0) {
+        if (ribbonTrack) ribbonTrack.innerHTML = '';
+        if (gridContainer) gridContainer.innerHTML = '';
+        if (noResults) noResults.classList.remove('hidden');
+        return;
+      }
+      if (noResults) noResults.classList.add('hidden');
+
+      var buildCardHtml = function(item, isRibbon) {
+        var isQuality = item.total_score >= 90;
+        var isItemDraft = (item.status === 'draft');
+        
+        var fallbackUri = getVenueFallbackSvg(item.name, item.format, item.city);
+        var firstPhoto = (item.photos && item.photos.length > 0) ? item.photos[0] : '';
+        var sanitized = sanitizeMediaSrc(firstPhoto);
+        var coverImg = sanitized ? sanitized : fallbackUri;
+        var coverMediaHtml = '<img src="' + coverImg + '" class="card-cover-media" alt="' + escapeHTML(item.name) + '" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=\'' + fallbackUri + '\';">';
+        if (item.video) {
+          coverMediaHtml = '<video autoplay loop muted playsinline webkit-playsinline preload="metadata" class="card-cover-media" style="width: 100%; height: 100%; object-fit: cover; background: #111113;" poster="' + fallbackUri + '">' +
+            '<source src="' + escapeHTML(item.video) + '" type="video/mp4">' +
+          '</video>';
+        }
+
+        var vibePills = (item.vibe_tags || []).slice(0, 2).map(function(t){ return '<span class="vibe-tag-pill">' + escapeHTML(t) + '</span>'; }).join(' ');
+        var sId = escapeHTML(String(item.id));
+        var checkNum = (typeof item.avg_check === 'number' ? item.avg_check : (parseInt(item.avg_check, 10) || 2000));
+
+        return '<div onclick="openVenueModal(\'' + sId + '\')" class="card ' + (isRibbon ? 'catalog-ribbon-card' : '') + ' ' + (isItemDraft ? 'draft-card' : '') + '">' +
+          '<div class="card-cover">' +
+            coverMediaHtml +
+            (isItemDraft ? '<div class="draft-badge-overlay">ЧЕРНОВИК</div>' : '') +
+            '<div class="card-score-badge">' + item.total_score + ' / 100</div>' +
+            '<div class="card-top-left-group">' +
+              '<button type="button" class="card-icon-btn card-fav-btn ' + (isFavorite(item.id) ? 'active' : '') + '" onclick="toggleFavorite(\'' + sId + '\', event)" title="В избранное">' +
+                (isFavorite(item.id) ? '♥' : '♡') +
+              '</button>' +
+              '<button type="button" class="card-icon-btn card-compare-btn ' + (isComparing(item.id) ? 'active' : '') + '" onclick="toggleCompare(\'' + sId + '\', event)" title="Сравнить">' +
+                '⚖' +
+              '</button>' +
+            '</div>' +
+            '<div class="michelin-photo-btn" onclick="openPhotoLightboxDirect(\'' + sId + '\', event)" title="Смотреть фото">' +
+              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' +
+              '<span>' + (item.photos ? item.photos.length : 0) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="card-body">' +
+            '<div>' +
+              '<div class="flex items-center justify-between" style="margin-bottom: 0.35rem;">' +
+                '<span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; font-weight: 800; color: var(--text-muted);">' + escapeHTML(item.format) + (item.price_tier ? ' • ' + escapeHTML(item.price_tier) : '') + '</span>' +
+                (isItemDraft ? '<span class="badge-draft">Черновик</span>' : (isQuality ? '<span class="badge-gold">Знак Качества</span>' : '<span class="badge-regular">' + escapeHTML(item.grade) + '</span>')) +
+              '</div>' +
+              '<h3 class="font-serif" style="font-size: 1.35rem; font-weight: 900; color: inherit; margin-bottom: 0.2rem;">' + escapeHTML(item.name) + '</h3>' +
+              '<p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">' + escapeHTML(item.city) + (item.district ? ' (' + escapeHTML(item.district) + ')' : '') + ', ' + escapeHTML(item.address || 'Центральный район') + '</p>' +
+              '<div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">' + vibePills + '</div>' +
+            '</div>' +
+            '<div class="flex items-center justify-between" style="border-top: 1px solid var(--border-color); padding-top: 0.85rem; margin-top: 0.75rem; font-size: 0.75rem;">' +
+              '<strong style="color: inherit; font-size: 0.8125rem;">' + checkNum.toLocaleString('ru-RU') + ' ₽ <span style="font-weight: normal; color: var(--text-muted); font-size: 0.75rem;">/ чек</span></strong>' +
+              '<span style="font-weight: 800; color: inherit;">Досье гида →</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      };
+
+      // Populate Ribbon Track
+      if (ribbonTrack) {
+        var rHtml = '';
+        for (var r = 0; r < filtered.length; r++) {
+          rHtml += buildCardHtml(filtered[r], true);
+        }
+        ribbonTrack.innerHTML = rHtml;
+      }
+
+      // Populate Grid
+      if (gridContainer) {
+        var gHtml = '';
+        for (var g = 0; g < filtered.length; g++) {
+          gHtml += buildCardHtml(filtered[g], false);
+        }
+        gridContainer.innerHTML = gHtml;
+      }
     }
 
     function setFormatFilter(fmt, btn) {
@@ -4234,7 +4386,7 @@
       setText('modalCity', target.city);
       setText('modalDistrict', target.district || target.city);
       setText('modalMapAddress', target.city + ', ' + (target.address || ''));
-      setText('modalCheck', target.avg_check ? target.avg_check.toLocaleString('ru-RU') + ' ₽' : '');
+      setText('modalCheck', (target.avg_check !== undefined && target.avg_check !== null) ? ((typeof target.avg_check === 'number' ? target.avg_check : (parseInt(target.avg_check, 10) || 2000)).toLocaleString('ru-RU') + ' ₽') : '');
       setText('modalValueScore', (target.value_score || 8.8) + ' / 10');
       setText('modalDate', target.date || '2026-08-10');
       setText('modalGradeText', target.status === 'draft' ? 'Черновик инспектора' : (target.total_score >= 90 ? 'Знак Качества' : target.grade));
@@ -4662,7 +4814,8 @@
             if (errEl) errEl.classList.remove('hidden');
           }
         });
-      } catch(err) {
+        return;
+      } catch(e) {
         var errEl = document.getElementById('pinError');
         if (errEl) errEl.classList.remove('hidden');
       }
@@ -5469,7 +5622,6 @@
           var insertRes = await supabaseClient.from('venues').insert([auditPayload]);
           if (insertRes.error) {
             console.error('Supabase insert error:', insertRes.error);
-            // Save to local drafts so work is never lost!
             venues.unshift(draftRecord);
             saveDB();
             updateStats();
@@ -11038,7 +11190,7 @@
           var draftList = venues.filter(function(v) { return v.status === 'draft'; });
           var merged = draftList.concat(remoteVenues);
           venues = merged;
-          safeSetItem('planka_guide_db_v76', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v77', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();

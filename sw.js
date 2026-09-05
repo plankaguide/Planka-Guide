@@ -1,4 +1,4 @@
-const CACHE_NAME = 'planka-guide-v76-cache';
+const CACHE_NAME = 'planka-guide-v77-cache';
 
 const STATIC_ASSETS = [
   './',
@@ -8,7 +8,7 @@ const STATIC_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,700&display=swap',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+  'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js'
 ];
 
 self.addEventListener('install', (event) => {
