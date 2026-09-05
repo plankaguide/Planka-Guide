@@ -1,4 +1,4 @@
-const CACHE_NAME = 'planka-guide-v71-cache';
+const CACHE_NAME = 'planka-guide-v72-cache';
 
 const STATIC_ASSETS = [
   './',
@@ -62,7 +62,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Food Photos and CDN Images caching strategy (Cache First with Stale-While-Revalidate)
+  // Food Photos, Storage and CDN Images caching strategy (Cache First with Stale-While-Revalidate)
   if (
     url.hostname.includes('unsplash.com') ||
     url.hostname.includes('wsrv.nl') ||
@@ -90,7 +90,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network First for HTML, fallback to cache
+  // Network First for HTML and venues.json
   if (event.request.mode === 'navigate' || url.pathname.endsWith('index.html') || url.pathname.endsWith('venues.json')) {
     event.respondWith(
       fetch(event.request)

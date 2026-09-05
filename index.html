@@ -6,7 +6,7 @@
   <title>PLANKA GUIDE — Независимый ресторанный гид и стандарт качества</title>
   
   <!-- SECURITY META HEADERS & CSP -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; connect-src 'self' https: data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; connect-src 'self' https: data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
@@ -2907,11 +2907,11 @@
           </div>
         </div>
 
-        <!-- ACTION BUTTONS: SAVE DRAFT vs PUBLISH -->
+        <!-- ACTION BUTTONS: SAVE DRAFT vs SUBMIT FOR MODERATION -->
         <div class="flex gap-2" style="flex-wrap: wrap;">
           <button type="button" onclick="closeAuditEditorModal()" class="btn btn-light" style="flex: 1;">Отмена</button>
-          <button type="button" onclick="submitAuditForm('draft')" class="btn btn-draft" style="flex: 1.5; padding: 0.85rem;">📁 В черновики</button>
-          <button type="button" onclick="submitAuditForm('published')" class="btn btn-dark" style="flex: 2; padding: 0.85rem;">🌟 Опубликовать в гиде</button>
+          <button type="button" onclick="submitAuditForm('draft')" class="btn btn-draft" style="flex: 1.2; padding: 0.85rem;">📁 В черновики</button>
+          <button type="button" id="btnSubmitAudit" onclick="submitAuditForm('pending')" class="btn btn-dark" style="flex: 2.2; padding: 0.85rem; font-weight: 800; background: var(--gold-deep); color: #18181B;">🚀 Отправить на модерацию</button>
         </div>
 
       </form>
@@ -2977,7 +2977,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
+      var stored = localStorage.getItem('planka_guide_db_v72') || localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
       if (stored) {
         var parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -3073,7 +3073,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v71', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v72', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -5142,15 +5142,35 @@
       var calcScEl = document.getElementById('formCalcScore');
       if (calcScEl) calcScEl.innerText = total;
 
-      var grade = "Выдающийся уровень";
-      if (total >= 90) grade = "Знак Качества";
-      else if (total >= 75) grade = "Рекомендовано";
-      else if (total >= 60) grade = "Базовый уровень";
-      else if (total >= 40) grade = "Посредственно";
-      else grade = "Критический уровень";
-
+      var grade = "Внутренний аудит (< 75 б.)";
       var calcGrEl = document.getElementById('formCalcGrade');
-      if (calcGrEl) calcGrEl.innerText = grade;
+      var btnSubmit = document.getElementById('btnSubmitAudit');
+
+      if (total >= 90) {
+        grade = "Знак Качества (90–100 б.)";
+        if (calcGrEl) { calcGrEl.innerText = grade; calcGrEl.style.color = "var(--gold-deep)"; }
+        if (btnSubmit) {
+          btnSubmit.innerText = "🚀 Отправить на модерацию (Знак Качества)";
+          btnSubmit.style.background = "var(--gold-deep)";
+          btnSubmit.style.color = "#18181B";
+        }
+      } else if (total >= 75) {
+        grade = "Рекомендовано (75–89 б.)";
+        if (calcGrEl) { calcGrEl.innerText = grade; calcGrEl.style.color = "#10B981"; }
+        if (btnSubmit) {
+          btnSubmit.innerText = "🚀 Отправить на модерацию (Рекомендовано)";
+          btnSubmit.style.background = "#27272A";
+          btnSubmit.style.color = "#FFFFFF";
+        }
+      } else {
+        grade = "Внутренний аудит (< 75 б. Публикация заблокирована)";
+        if (calcGrEl) { calcGrEl.innerText = grade; calcGrEl.style.color = "#EF4444"; }
+        if (btnSubmit) {
+          btnSubmit.innerText = "📁 Сохранить в закрытый архив базы (< 75 б.)";
+          btnSubmit.style.background = "#3F3F46";
+          btnSubmit.style.color = "#F4F4F5";
+        }
+      }
     }
 
     
@@ -5235,7 +5255,7 @@
       closeModal('auditEditorModal');
     }
 
-    function submitAuditForm(targetStatus) {
+    async function submitAuditForm(targetStatus) {
       var nameVal = document.getElementById('formName').value.trim();
       var cityVal = document.getElementById('formCity').value.trim();
       var dishVal = document.getElementById('formDish').value.trim();
@@ -5254,7 +5274,7 @@
       }
 
       var total = Math.max(0, Math.min(100, sum));
-      var grade = total >= 90 ? "Знак Качества" : (total >= 75 ? "Рекомендовано" : (total >= 60 ? "Базовый уровень" : "Посредственно"));
+      var grade = total >= 90 ? "Знак Качества" : (total >= 75 ? "Рекомендовано" : "Внутренний аудит");
 
       var checkVal = parseInt(document.getElementById('formCheck').value) || 1000;
       var priceTier = checkVal >= 5000 ? "₽₽₽₽" : (checkVal >= 2500 ? "₽₽₽" : (checkVal >= 1000 ? "₽₽" : "₽"));
@@ -5286,56 +5306,12 @@
 
       var auditNote = fullRevText || ("Контрольная инспекция заведения: " + total + " баллов.");
       var vScore = Math.round(Math.min(10.0, Math.max(4.0, (total / Math.pow(checkVal, 0.35)) * 1.15)) * 10) / 10;
+      var todayStr = new Date().toISOString().split('T')[0];
 
-      if (editId) {
-        for (var i = 0; i < venues.length; i++) {
-          if (venues[i].id == editId) {
-            venues[i].name = nameVal;
-            venues[i].format = document.getElementById('formFormat').value;
-            venues[i].city = cityVal;
-            venues[i].district = distText;
-            venues[i].address = addrText;
-            venues[i].avg_check = checkVal;
-            venues[i].price_tier = priceTier;
-            venues[i].segment = document.getElementById('formSegment').value;
-            venues[i].chef = chefText;
-            venues[i].phone = phoneText;
-            venues[i].booking_url = bookUrlText;
-            venues[i].no_booking = noBookingVal;
-            venues[i].status = targetStatus;
-
-            venues[i].signature_dish = dishVal;
-            venues[i].dish_review = document.getElementById('formDishReview').value;
-            venues[i].full_review = fullRevText;
-            venues[i].private_notes = privNotes;
-            venues[i].urban_notes = urbanNotesText;
-            venues[i].ergonomics_notes = ergoNotesText;
-            venues[i].video = currentEditingVideo;
-            venues[i].photos = currentEditingPhotos;
-            venues[i].private_photos = currentEditingPrivatePhotos;
-            venues[i].scores = { food: bFood, wow: bWow, price: bPrice, service: bService, space: bSpace, sanitation: bSanitation };
-            venues[i].total_score = total;
-            venues[i].grade = grade;
-            venues[i].value_score = vScore;
-            if (prosList.length > 0) venues[i].pros = prosList;
-            if (consList.length > 0) venues[i].cons = consList;
-            if (vibeList.length > 0) venues[i].vibe_tags = vibeList;
-
-            if (!venues[i].history) venues[i].history = [];
-            venues[i].history.push({
-              date: new Date().toISOString().split('T')[0],
-              score: total,
-              notes: auditNote
-            });
-            venues[i].audit_count = venues[i].history.length;
-            venues[i].score_delta = venues[i].history[venues[i].history.length - 1].score - venues[i].history[0].score;
-            break;
-          }
-        }
-      } else {
-        var todayStr = new Date().toISOString().split('T')[0];
-        var newObj = {
-          id: Date.now(),
+      // Local draft handling
+      if (targetStatus === 'draft') {
+        var draftObj = {
+          id: editId ? (parseInt(editId, 10) || editId) : Date.now(),
           name: nameVal,
           format: document.getElementById('formFormat').value,
           city: cityVal,
@@ -5349,38 +5325,141 @@
           phone: phoneText,
           booking_url: bookUrlText,
           no_booking: noBookingVal,
-          status: targetStatus,
+          status: 'draft',
           date: todayStr,
           scores: { food: bFood, wow: bWow, price: bPrice, service: bService, space: bSpace, sanitation: bSanitation },
           total_score: total,
           grade: grade,
           value_score: vScore,
           signature_dish: dishVal,
-          dish_review: document.getElementById('formDishReview').value || "Выверенный баланс вкуса и аккуратная подача.",
-          full_review: fullRevText || ("Контрольный аудит заведения " + nameVal + ". Общий балл составил " + total + "/100."),
+          dish_review: document.getElementById('formDishReview').value || "Выверенный баланс вкуса.",
+          full_review: fullRevText || ("Контрольный аудит: " + nameVal + ". Балл: " + total),
           private_notes: privNotes || "",
-          urban_notes: urbanNotesText || "Интеграция входной группы в уличную ткань города, безбарьерный доступ и удобная буферная зона.",
-          ergonomics_notes: ergoNotesText || "Эргономичная расстановка столов, акустический комфорт (зонирование без эха) и направленный теплый свет.",
+          urban_notes: urbanNotesText || "",
+          ergonomics_notes: ergoNotesText || "",
           video: currentEditingVideo,
           photos: currentEditingPhotos,
           private_photos: currentEditingPrivatePhotos,
-          pros: prosList.length > 0 ? prosList : ["Качественная отдача горячего", "Внимательный сервис"],
-          cons: consList.length > 0 ? consList : ["Небольшие замечания по времени ожидания"],
-          vibe_tags: vibeList.length > 0 ? vibeList : ["Свежий аудит", "Проверено лично"],
-          history: [{ date: todayStr, score: total, notes: auditNote }],
-          audit_count: 1,
-          score_delta: 0,
-          coords: { lat: 55.7512, lng: 37.6184 }
+          pros: prosList,
+          cons: consList,
+          vibe_tags: vibeList,
+          history: [{ date: todayStr, score: total, notes: auditNote }]
         };
-        venues.unshift(newObj);
+
+        if (editId) {
+          for (var di = 0; di < venues.length; di++) {
+            if (venues[di].id == editId) { venues[di] = draftObj; break; }
+          }
+        } else {
+          venues.unshift(draftObj);
+        }
+        saveDB();
+        closeAuditEditorModal();
+        alert('Аудит «' + nameVal + '» успешно сохранён в ЧЕРНОВИКИ на устройстве.');
+        return;
       }
 
-      saveDB();
+      // MODERATION SUBMISSION TO CLOUD DATABASE (SUPABASE)
+      var finalDbStatus = (total >= 75) ? 'pending' : 'archived';
+      var uploadedPhotos = currentEditingPhotos.slice();
+
+      // Upload base64 photos to Supabase Storage bucket 'planka-media'
+      if (supabaseClient && Array.isArray(currentEditingPhotos)) {
+        for (var pIdx = 0; pIdx < currentEditingPhotos.length; pIdx++) {
+          var pData = currentEditingPhotos[pIdx];
+          if (pData && pData.indexOf('data:image') === 0) {
+            try {
+              var match = pData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+              if (match) {
+                var ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+                var rawB64 = match[2];
+                var byteChars = atob(rawB64);
+                var byteNums = new Array(byteChars.length);
+                for (var b = 0; b < byteChars.length; b++) { byteNums[b] = byteChars.charCodeAt(b); }
+                var byteArray = new Uint8Array(byteNums);
+                var blob = new Blob([byteArray], { type: 'image/' + ext });
+                var fileName = 'audit_' + Date.now() + '_' + pIdx + '.' + ext;
+
+                var uploadRes = await supabaseClient.storage.from('planka-media').upload(fileName, blob, { contentType: 'image/' + ext });
+                if (!uploadRes.error && uploadRes.data) {
+                  var publicUrlRes = supabaseClient.storage.from('planka-media').getPublicUrl(fileName);
+                  if (publicUrlRes && publicUrlRes.data && publicUrlRes.data.publicUrl) {
+                    uploadedPhotos[pIdx] = publicUrlRes.data.publicUrl;
+                  }
+                }
+              }
+            } catch(upErr) {
+              console.warn('Storage upload error for photo ' + pIdx + ':', upErr);
+            }
+          }
+        }
+      }
+
+      var auditPayload = {
+        name: nameVal,
+        city: cityVal,
+        category: document.getElementById('formFormat').value,
+        address: addrText,
+        scores: { food: bFood, wow: bWow, price: bPrice, service: bService, space: bSpace, sanitation: bSanitation },
+        total_score: total,
+        status: finalDbStatus,
+        media_urls: uploadedPhotos,
+        review: fullRevText || ("Контрольный аудит: " + nameVal + ". Итог: " + total + " б."),
+        details: {
+          name: nameVal,
+          format: document.getElementById('formFormat').value,
+          city: cityVal,
+          district: distText || "Центральный район",
+          address: addrText || "",
+          avg_check: checkVal,
+          price_tier: priceTier,
+          segment: document.getElementById('formSegment').value,
+          chef: chefText || "",
+          phone: phoneText,
+          booking_url: bookUrlText,
+          no_booking: noBookingVal,
+          status: finalDbStatus,
+          date: todayStr,
+          scores: { food: bFood, wow: bWow, price: bPrice, service: bService, space: bSpace, sanitation: bSanitation },
+          total_score: total,
+          grade: grade,
+          value_score: vScore,
+          signature_dish: dishVal,
+          dish_review: document.getElementById('formDishReview').value || "",
+          full_review: fullRevText || "",
+          private_notes: privNotes || "",
+          urban_notes: urbanNotesText || "",
+          ergonomics_notes: ergoNotesText || "",
+          video: currentEditingVideo,
+          photos: uploadedPhotos,
+          private_photos: currentEditingPrivatePhotos,
+          pros: prosList,
+          cons: consList,
+          vibe_tags: vibeList,
+          history: [{ date: todayStr, score: total, notes: auditNote }]
+        }
+      };
+
+      if (supabaseClient) {
+        try {
+          var insertRes = await supabaseClient.from('venues').insert([auditPayload]);
+          if (insertRes.error) {
+            console.error('Supabase insert error:', insertRes.error);
+            alert('Ошибка отправки в облачную базу: ' + insertRes.error.message + '\nОтчет временно сохранен в локальные черновики.');
+          } else {
+            console.log('✓ Audit inserted to Supabase with status:', finalDbStatus);
+          }
+        } catch(netErr) {
+          console.warn('Network error when sending to Supabase:', netErr);
+        }
+      }
+
       closeAuditEditorModal();
-      if (targetStatus === 'draft') {
-        alert('Аудит сохранен в ЧЕРНОВИКИ.');
+
+      if (total >= 75) {
+        alert('🚀 Отчёт по заведению «' + nameVal + '» (' + total + ' б., ' + grade + ') успешно отправлен на МОДЕРАЦИЮ в облачную базу данных!\n\nПосле подтверждения модератором карточка мгновенно появится в открытом гиде.');
       } else {
-        alert('Аудит "' + nameVal + '" успешно ОПУБЛИКОВАН в гиде PLANKA GUIDE!');
+        alert('📁 Отчёт по заведению «' + nameVal + '» (' + total + ' б.) сохранён в ЗАКРЫТЫЙ АРХИВ базы данных.\n\nПубликация заблокирована, так как итоговый балл ниже порога 75 баллов.');
       }
     }
 
@@ -10758,7 +10837,7 @@
           var draftList = venues.filter(function(v) { return v.status === 'draft'; });
           var merged = draftList.concat(remoteVenues);
           venues = merged;
-          safeSetItem('planka_guide_db_v71', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v72', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
