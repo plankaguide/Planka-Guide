@@ -1671,7 +1671,8 @@
               📨 Заявки <span id="adminSugCountBadgeDesk" class="font-mono">(0)</span>
             </button>
             <button onclick="toggleDraftsFilter()" type="button" id="btnDraftsFilter" class="btn btn-draft" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem;">📁 Черновики <span id="draftsCountBadge">(0)</span></button>
-            <button onclick="openSyncModal()" type="button" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem; background: #27272A; color: #FFF; border-color: #3F3F46;">Синхронизация</button>
+            <button onclick="openSyncModal()" type="button" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem; background: #27272A; color: #FFF; border-color: #3F3F46;">Синхронизация & JSON</button>
+            <button onclick="openModeratorModal()" id="btnModeratorDesk" type="button" class="btn btn-gold hidden" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem; font-weight: 800;">🛡 Модерация <span id="adminPendingCountBadge">(0)</span></button>
           </div>
         </div>
       </div>
@@ -2237,32 +2238,65 @@
   </div>
 <!-- MODAL: SECURE INSPECTOR AUTH -->
   <div id="pinModal" class="modal-overlay" onclick="closePinModal()">
-    <div class="modal-box text-center" style="max-width: 380px; padding: 2.25rem;" onclick="event.stopPropagation()">
+    <div class="modal-box text-center" style="max-width: 420px; padding: 2.25rem;" onclick="event.stopPropagation()">
       <div class="brand-mark" style="margin: 0 auto 1.25rem auto; width: 3rem; height: 3rem; font-size: 1.35rem;">P</div>
-      <h3 class="font-serif" style="font-size: 1.25rem; font-weight: 900; color: inherit; margin-bottom: 0.25rem;">Авторизация инспектора</h3>
-      <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.35rem;">Введите мастер-пароль для доступа к закрытой панели аудитора</p>
+      <h3 class="font-serif" style="font-size: 1.35rem; font-weight: 900; color: inherit; margin-bottom: 0.25rem;">Авторизация в системе</h3>
       
-      <form onsubmit="handlePinSubmit(event)">
-        <input type="password" id="pinInput" placeholder="Введите пароль доступа" style="text-align: center; letter-spacing: 0.1em; font-size: 1rem; font-weight: 800; margin-bottom: 0.5rem;">
-        <div id="pinError" class="hidden" style="color: #DC2626; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem;">Неверный пароль доступа</div>
+      <!-- Role Tabs Toggle -->
+      <div style="display: flex; gap: 0.35rem; background: var(--bg-subtle); padding: 0.25rem; border-radius: 0.4rem; margin: 1rem 0 1.25rem 0;">
+        <button type="button" id="tabBtnInspector" onclick="switchAuthTab('inspector')" class="btn btn-dark" style="flex: 1; font-size: 0.75rem; padding: 0.45rem;">🕵️ Инспектор</button>
+        <button type="button" id="tabBtnModerator" onclick="switchAuthTab('moderator')" class="btn btn-light" style="flex: 1; font-size: 0.75rem; padding: 0.45rem;">🛡 Модератор</button>
+      </div>
+
+      <!-- Inspector Auth Form (Zero plaintext passwords in code - SHA-256 hash verified) -->
+      <form id="inspectorAuthForm" onsubmit="handleInspectorPinSubmit(event)">
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.85rem;">Введите код доступа для полевого аудита заведений:</p>
+        <input type="password" id="pinInput" placeholder="Введите PIN аудитора" style="text-align: center; letter-spacing: 0.1em; font-size: 1rem; font-weight: 800; margin-bottom: 0.5rem;" autocomplete="off">
+        <div id="pinError" class="hidden" style="color: #DC2626; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem;">Неверный код доступа инспектора</div>
         <div class="flex gap-2">
           <button type="button" onclick="closePinModal()" class="btn btn-light" style="flex: 1;">Отмена</button>
-          <button type="submit" class="btn btn-dark" style="flex: 1;">Войти</button>
+          <button type="submit" class="btn btn-dark" style="flex: 1;">Войти как инспектор</button>
+        </div>
+      </form>
+
+      <!-- Moderator Auth Form (Enterprise Supabase Server Authentication) -->
+      <form id="moderatorAuthForm" class="hidden" onsubmit="handleModeratorLoginSubmit(event)" style="text-align: left;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.85rem; text-align: center;">Серверная авторизация через облако Supabase:</p>
+        <div style="margin-bottom: 0.65rem;">
+          <label style="font-size: 0.75rem; font-weight: 800; display: block; margin-bottom: 0.25rem;">Email модератора</label>
+          <input type="email" id="modEmailInput" placeholder="hq@plankaguide.ru" required style="font-size: 0.8125rem;">
+        </div>
+        <div style="margin-bottom: 0.85rem;">
+          <label style="font-size: 0.75rem; font-weight: 800; display: block; margin-bottom: 0.25rem;">Пароль базы данных</label>
+          <input type="password" id="modPasswordInput" placeholder="••••••••••••" required style="font-size: 0.8125rem;">
+        </div>
+        <div id="modAuthError" class="hidden" style="color: #DC2626; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; text-align: center;">Неверный email или пароль модератора</div>
+        <div class="flex gap-2">
+          <button type="button" onclick="closePinModal()" class="btn btn-light" style="flex: 1;">Отмена</button>
+          <button type="submit" id="btnModSubmit" class="btn btn-dark" style="flex: 1.5; font-weight: 800; background: var(--gold-deep); color: #18181B;">Войти как модератор</button>
         </div>
       </form>
     </div>
   </div>
-
-  <!-- MODAL: SYNC & EXPORT -->
+<!-- MODAL: SYNC & EXPORT -->
   <div id="syncModal" class="modal-overlay" onclick="closeSyncModal()">
     <div class="modal-box" style="max-width: 540px; padding: 2.25rem;" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem; margin-bottom: 1.35rem;">
-        <h3 class="font-serif" style="font-size: 1.25rem; font-weight: 900; color: inherit;">Управление базой данных и публикация</h3>
+        <h3 class="font-serif" style="font-size: 1.25rem; font-weight: 900; color: inherit;">Управление базой данных и синхронизация</h3>
         <button onclick="closeSyncModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2rem; height: 2rem; border-radius: 9999px; cursor: pointer; font-weight: 900;">✕</button>
       </div>
 
       <div style="font-size: 0.8125rem; color: var(--text-body); display: flex; flex-direction: column; gap: 1.25rem;">
         
+        <!-- Cloud Status -->
+        <div style="background: #18181B; color: #FFFFFF; padding: 0.85rem 1.15rem; border-radius: 0.5rem; border: 1px solid #3F3F46; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="width: 9px; height: 9px; border-radius: 50%; background: #10B981; display: inline-block; box-shadow: 0 0 6px #10B981;"></span>
+            <strong style="font-size: 0.8125rem; color: #FFF;">Облачная база: Supabase PostgreSQL</strong>
+          </div>
+          <span style="font-size: 0.6875rem; color: #10B981; font-weight: 800;">Подключено</span>
+        </div>
+
         <!-- Google Sheets Master Database Link -->
         <div style="background: #18181B; color: #FFFFFF; padding: 1.35rem; border-radius: 0.5rem; border: 1px solid #3F3F46;">
           <div class="flex items-center justify-between" style="margin-bottom: 0.35rem;">
@@ -2272,19 +2306,19 @@
           <p style="font-size: 0.75rem; color: #D4CEBE; line-height: 1.5; margin-bottom: 1rem;">
             Таблица со всеми 6 специализированными калькуляторами категорий, формулами, баллами и архивом в папке <code>02_Database_Table</code>:
           </p>
-          <a href="https://drive.google.com/file/d/1VzVhiaGymAFS-FqGyzBTq2A72wceuKv6/view?usp=drivesdk" target="_blank" class="btn btn-gold" style="display: block; text-align: center; text-decoration: none; font-weight: 900; font-size: 0.8125rem; padding: 0.75rem;">
+          <a href="https://drive.google.com/file/d/18ifzcmQ8cEHMkndux9VQmShj8kQoG4fz/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn btn-gold" style="display: block; text-align: center; text-decoration: none; font-weight: 900; font-size: 0.8125rem; padding: 0.75rem;">
             📊 Открыть мастер-базу на Google Диске
           </a>
         </div>
 
-        <!-- GitHub Deploy Export / Import -->
+        <!-- Manual GitHub / Local Export / Import -->
         <div style="background: var(--bg-surface); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 0.5rem;">
           <div class="flex items-center justify-between" style="margin-bottom: 0.25rem;">
-            <strong style="color: inherit; font-size: 0.8125rem;">🚀 Публикация аудитов на сайт (GitHub)</strong>
-            <span style="font-size: 0.625rem; color: var(--text-muted); font-family: ui-monospace, monospace; font-weight: 800;">СИНХРОНИЗАЦИЯ</span>
+            <strong style="color: inherit; font-size: 0.8125rem;">🚀 Ручная выгрузка и резервное копирование (JSON)</strong>
+            <span style="font-size: 0.625rem; color: var(--text-muted); font-family: ui-monospace, monospace; font-weight: 800;">РЕЗЕРВНАЯ КОПИЯ</span>
           </div>
           <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.85rem;">
-            Скачайте обновленный файл <code>venues.json</code> со всеми вашими черновиками и новыми аудитами и загрузите его в GitHub-репозиторий для мгновенного обновления сайта:
+            Выгрузить файл <code>venues.json</code> со всеми актуальными заведениями и черновиками или импортировать файл вручную:
           </p>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <button onclick="exportDatabaseJSON()" type="button" class="btn btn-dark" style="flex: 1; font-size: 0.75rem; padding: 0.65rem; font-weight: 800;">
@@ -2301,7 +2335,32 @@
     </div>
   </div>
 
-  <!-- MODAL: SUGGEST A VENUE FOR INSPECTION (100% ZERO PERSONAL DATA COLLECTED - 152-FZ COMPLIANT) -->
+  <!-- MODAL: DEDICATED MODERATOR DESK (MODERATORS ONLY) -->
+  <div id="moderatorModal" class="modal-overlay" onclick="closeModeratorModal()">
+    <div class="modal-box" style="max-width: 680px; padding: 2.25rem;" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem; margin-bottom: 1.35rem;">
+        <div>
+          <span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; font-weight: 800; color: var(--gold-deep);">ЗАКРЫТЫЙ ДОСТУП</span>
+          <h3 class="font-serif" style="font-size: 1.35rem; font-weight: 900; color: inherit; margin-top: 0.15rem;">🛡 Панель главного модератора</h3>
+        </div>
+        <button onclick="closeModeratorModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2rem; height: 2rem; border-radius: 9999px; cursor: pointer; font-weight: 900;">✕</button>
+      </div>
+
+      <div style="font-size: 0.8125rem; color: var(--text-body); display: flex; flex-direction: column; gap: 1.25rem;">
+        <div style="background: var(--bg-surface); border: 1.5px solid var(--border-color); border-radius: 0.5rem; padding: 1.25rem;">
+          <div class="flex items-center justify-between" style="margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <strong style="color: inherit; font-size: 0.875rem;">📥 Поступившие отчёты инспекторов (status = pending)</strong>
+            <span id="moderatorQueueCount" style="font-size: 0.6875rem; font-family: ui-monospace, monospace; font-weight: 800; color: var(--gold-deep);">Загрузка...</span>
+          </div>
+
+          <div id="moderatorQueueList" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 48vh; overflow-y: auto;">
+            <div style="text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.75rem;">Загрузка очереди модерации из базы данных...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- MODAL: SUGGEST A VENUE FOR INSPECTION (100% ZERO PERSONAL DATA COLLECTED - 152-FZ COMPLIANT) -->
   <div id="suggestModal" class="modal-overlay" onclick="closeSuggestModal()">
     <div class="modal-box" style="max-width: 520px; padding: 2.25rem;" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
@@ -2963,7 +3022,7 @@
     // PLANKA GUIDE CLOUD DATABASE CONFIG (SUPABASE)
     // ==========================================
     const SUPABASE_URL = 'https://tyutrrvirpclwoatkmnj.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_zCAarA02eoJArSegdR_14Q_4PMKFIeS';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5dXRycnZpcnBjbHdvYXRrbW5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MzE3NzgsImV4cCI6MjEwNDIwNzc3OH0.sF53gmVH5eUFFLz7bAxektag1pK8Iv2eGZzB8iJj9jM';
     var supabaseClient = null;
     try {
       if (window.supabase && typeof window.supabase.createClient === 'function') {
@@ -2977,7 +3036,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v72') || localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
+      var stored = localStorage.getItem('planka_guide_db_v74') || localStorage.getItem('planka_guide_db_v73') || localStorage.getItem('planka_guide_db_v72') || localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
       if (stored) {
         var parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -3008,7 +3067,14 @@
 
     var isAdmin = false;
     try {
-      isAdmin = sessionStorage.getItem('planka_admin_logged') === 'true';
+      var adminRole = sessionStorage.getItem('planka_admin_logged');
+      if (adminRole === 'moderator') {
+        isAdmin = true;
+        isModerator = true;
+      } else if (adminRole === 'inspector' || adminRole === 'true') {
+        isAdmin = true;
+        isModerator = false;
+      }
     } catch(e) {}
 
     // Favorites & Compare State
@@ -3073,7 +3139,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v72', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v74', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -4652,12 +4718,60 @@
       closeModal('pinModal');
     }
 
-    function handlePinSubmit(e) {
+    var isModerator = false;
+
+    function openPinModal() {
+      var pinInp = document.getElementById('pinInput');
+      if (pinInp) pinInp.value = '';
+      var errEl = document.getElementById('pinError');
+      if (errEl) errEl.classList.add('hidden');
+      var modErr = document.getElementById('modAuthError');
+      if (modErr) modErr.classList.add('hidden');
+      switchAuthTab('inspector');
+      openModal('pinModal');
+      setTimeout(function() { if (pinInp) pinInp.focus(); }, 100);
+    }
+
+    function switchAuthTab(tab) {
+      var inspForm = document.getElementById('inspectorAuthForm');
+      var modForm = document.getElementById('moderatorAuthForm');
+      var btnInsp = document.getElementById('tabBtnInspector');
+      var btnMod = document.getElementById('tabBtnModerator');
+      if (tab === 'moderator') {
+        if (inspForm) inspForm.classList.add('hidden');
+        if (modForm) modForm.classList.remove('hidden');
+        if (btnMod) { btnMod.classList.add('btn-dark'); btnMod.classList.remove('btn-light'); }
+        if (btnInsp) { btnInsp.classList.add('btn-light'); btnInsp.classList.remove('btn-dark'); }
+        var emInp = document.getElementById('modEmailInput');
+        if (emInp) setTimeout(function(){ emInp.focus(); }, 50);
+      } else {
+        if (inspForm) inspForm.classList.remove('hidden');
+        if (modForm) modForm.classList.add('hidden');
+        if (btnInsp) { btnInsp.classList.add('btn-dark'); btnInsp.classList.remove('btn-light'); }
+        if (btnMod) { btnMod.classList.add('btn-light'); btnMod.classList.remove('btn-dark'); }
+        var pinInp = document.getElementById('pinInput');
+        if (pinInp) setTimeout(function(){ pinInp.focus(); }, 50);
+      }
+    }
+
+    function openModeratorModal() {
+      if (!isModerator) {
+        alert('Доступ в панель модератора разрешён только главному модератору.');
+        return;
+      }
+      openModal('moderatorModal');
+      renderModeratorQueue();
+    }
+    function closeModeratorModal() {
+      closeModal('moderatorModal');
+    }
+
+    // INSPECTOR AUTHENTICATION (Zero plaintext passwords in code - cryptographic SHA-256 hash verified)
+    function handleInspectorPinSubmit(e) {
       e.preventDefault();
       var pinInp = document.getElementById('pinInput');
       var pin = pinInp ? pinInp.value.trim() : '';
-      
-      // Cryptographic SHA-256 validation (Zero plaintext password in client code)
+
       var passSha = 'ae838b9ac659103d5f9d0d42bfb1c4cad04d9e0c460e6391ad3082b28436550e';
       var inputHash = '';
       try {
@@ -4665,43 +4779,77 @@
         crypto.subtle.digest('SHA-256', buffer).then(function(hashBuffer) {
           var hashArray = Array.from(new Uint8Array(hashBuffer));
           inputHash = hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-          if (inputHash === passSha || pin === 'plankaguide') {
+          if (inputHash === passSha) {
             isAdmin = true;
-            try { sessionStorage.setItem('planka_admin_logged', 'true'); } catch(err) {}
+            isModerator = false;
+            try { sessionStorage.setItem('planka_admin_logged', 'inspector'); } catch(err) {}
             closePinModal();
             updateAdminUI();
             updateOnlineStatus();
             renderVenues();
-            alert('Режим инспектора PLANKA GUIDE активирован!');
+            alert('Режим ИНСПЕКТОРА активирован. Вы можете проводить замеры и отправлять отчёты на проверку.');
           } else {
             var errEl = document.getElementById('pinError');
             if (errEl) errEl.classList.remove('hidden');
           }
         });
+      } catch(err) {
+        var errEl = document.getElementById('pinError');
+        if (errEl) errEl.classList.remove('hidden');
+      }
+    }
+
+    // MODERATOR AUTHENTICATION (Enterprise Supabase Server Authentication)
+    async function handleModeratorLoginSubmit(e) {
+      e.preventDefault();
+      var emailEl = document.getElementById('modEmailInput');
+      var passEl = document.getElementById('modPasswordInput');
+      var errEl = document.getElementById('modAuthError');
+      var btnSubmit = document.getElementById('btnModSubmit');
+
+      var email = emailEl ? emailEl.value.trim() : '';
+      var pass = passEl ? passEl.value : '';
+
+      if (!email || !pass) return;
+      if (!supabaseClient) {
+        alert('Клиент базы данных не инициализирован. Проверьте интернет-соединение.');
         return;
-      } catch(e) {
-        if (pin === 'plankaguide') {
-          isAdmin = true;
-          try { sessionStorage.setItem('planka_admin_logged', 'true'); } catch(err) {}
-          closePinModal();
-          updateAdminUI();
-          updateOnlineStatus();
-          renderVenues();
-          alert('Режим инспектора PLANKA GUIDE активирован!');
+      }
+
+      if (btnSubmit) btnSubmit.innerText = 'Проверка...';
+      if (errEl) errEl.classList.add('hidden');
+
+      try {
+        var authRes = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: pass
+        });
+
+        if (authRes.error) {
+          if (errEl) {
+            errEl.innerText = 'Ошибка авторизации: ' + authRes.error.message;
+            errEl.classList.remove('hidden');
+          }
+          if (btnSubmit) btnSubmit.innerText = 'Войти как модератор';
           return;
         }
-      }
-      if (false) {
+
         isAdmin = true;
-        try { sessionStorage.setItem('planka_admin_logged', 'true'); } catch(err) {}
+        isModerator = true;
+        try { sessionStorage.setItem('planka_admin_logged', 'moderator'); } catch(err) {}
         closePinModal();
         updateAdminUI();
         updateOnlineStatus();
         renderVenues();
-        alert('Режим инспектора PLANKA GUIDE активирован!');
-      } else {
-        var errEl = document.getElementById('pinError');
-        if (errEl) errEl.classList.remove('hidden');
+        renderModeratorQueue();
+        alert('🛡 Добро пожаловать, Главный модератор PLANKA GUIDE!\n\nВам доступна закрытая вкладка «🛡 Модерация».');
+      } catch(netErr) {
+        if (errEl) {
+          errEl.innerText = 'Ошибка сети: ' + netErr.message;
+          errEl.classList.remove('hidden');
+        }
+      } finally {
+        if (btnSubmit) btnSubmit.innerText = 'Войти как модератор';
       }
     }
 
@@ -4723,6 +4871,12 @@
       var btnInsp = document.getElementById('btnInstallAppInspector');
       if (badgeDesk) badgeDesk.innerText = '(' + guestSuggestions.length + ')';
       
+      var btnMod = document.getElementById('btnModeratorDesk');
+      if (btnMod) {
+        if (isAdmin && isModerator) btnMod.classList.remove('hidden');
+        else btnMod.classList.add('hidden');
+      }
+
       if (isAdmin) {
         if (indD) indD.classList.remove('hidden');
         if (indM) indM.classList.remove('hidden');
@@ -5279,9 +5433,9 @@
       var checkVal = parseInt(document.getElementById('formCheck').value) || 1000;
       var priceTier = checkVal >= 5000 ? "₽₽₽₽" : (checkVal >= 2500 ? "₽₽₽" : (checkVal >= 1000 ? "₽₽" : "₽"));
 
-      var prosList = document.getElementById('formPros').value.split('\n').filter(function(s) { return s.trim().length > 0; });
-      var consList = document.getElementById('formCons').value.split('\n').filter(function(s) { return s.trim().length > 0; });
-      var vibeList = document.getElementById('formVibeTags').value.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+      var prosList = document.getElementById('formPros').value.split('\n').map(function(s){return s.trim();}).filter(function(s){return s.length > 0;});
+      var consList = document.getElementById('formCons').value.split('\n').map(function(s){return s.trim();}).filter(function(s){return s.length > 0;});
+      var vibeList = document.getElementById('formVibeTags').value.split(',').map(function(s){return s.trim();}).filter(function(s){return s.length > 0;});
       var fullRevText = document.getElementById('formFullReview').value;
       var privNotes = document.getElementById('formPrivateNotes').value;
       var urbanNotesText = document.getElementById('formUrbanNotes').value;
@@ -5308,58 +5462,59 @@
       var vScore = Math.round(Math.min(10.0, Math.max(4.0, (total / Math.pow(checkVal, 0.35)) * 1.15)) * 10) / 10;
       var todayStr = new Date().toISOString().split('T')[0];
 
-      // Local draft handling
-      if (targetStatus === 'draft') {
-        var draftObj = {
-          id: editId ? (parseInt(editId, 10) || editId) : Date.now(),
-          name: nameVal,
-          format: document.getElementById('formFormat').value,
-          city: cityVal,
-          district: distText || "Центральный район",
-          address: addrText || "Центральный район",
-          avg_check: checkVal,
-          price_tier: priceTier,
-          segment: document.getElementById('formSegment').value,
-          chef: chefText || "Шеф-повар",
-          concept: "Авторская концепция и локальные продукты",
-          phone: phoneText,
-          booking_url: bookUrlText,
-          no_booking: noBookingVal,
-          status: 'draft',
-          date: todayStr,
-          scores: { food: bFood, wow: bWow, price: bPrice, service: bService, space: bSpace, sanitation: bSanitation },
-          total_score: total,
-          grade: grade,
-          value_score: vScore,
-          signature_dish: dishVal,
-          dish_review: document.getElementById('formDishReview').value || "Выверенный баланс вкуса.",
-          full_review: fullRevText || ("Контрольный аудит: " + nameVal + ". Балл: " + total),
-          private_notes: privNotes || "",
-          urban_notes: urbanNotesText || "",
-          ergonomics_notes: ergoNotesText || "",
-          video: currentEditingVideo,
-          photos: currentEditingPhotos,
-          private_photos: currentEditingPrivatePhotos,
-          pros: prosList,
-          cons: consList,
-          vibe_tags: vibeList,
-          history: [{ date: todayStr, score: total, notes: auditNote }]
-        };
+      var draftRecord = {
+        id: editId ? (parseInt(editId, 10) || editId) : Date.now(),
+        name: nameVal,
+        format: document.getElementById('formFormat').value,
+        city: cityVal,
+        district: distText || "Центральный район",
+        address: addrText || "Центральный район",
+        avg_check: checkVal,
+        price_tier: priceTier,
+        segment: document.getElementById('formSegment').value,
+        chef: chefText || "Шеф-повар",
+        concept: "Авторская концепция и локальные продукты",
+        phone: phoneText,
+        booking_url: bookUrlText,
+        no_booking: noBookingVal,
+        status: 'draft',
+        date: todayStr,
+        scores: { food: bFood, wow: bWow, price: bPrice, service: bService, space: bSpace, sanitation: bSanitation },
+        total_score: total,
+        grade: grade,
+        value_score: vScore,
+        signature_dish: dishVal,
+        dish_review: document.getElementById('formDishReview').value || "Выверенный баланс вкуса.",
+        full_review: fullRevText || ("Контрольный аудит: " + nameVal + ". Балл: " + total),
+        private_notes: privNotes || "",
+        urban_notes: urbanNotesText || "",
+        ergonomics_notes: ergoNotesText || "",
+        video: currentEditingVideo,
+        photos: currentEditingPhotos,
+        private_photos: currentEditingPrivatePhotos,
+        pros: prosList,
+        cons: consList,
+        vibe_tags: vibeList,
+        history: [{ date: todayStr, score: total, notes: auditNote }]
+      };
 
+      // 1. Explicit Local Draft Request
+      if (targetStatus === 'draft') {
         if (editId) {
           for (var di = 0; di < venues.length; di++) {
-            if (venues[di].id == editId) { venues[di] = draftObj; break; }
+            if (venues[di].id == editId) { venues[di] = draftRecord; break; }
           }
         } else {
-          venues.unshift(draftObj);
+          venues.unshift(draftRecord);
         }
         saveDB();
         closeAuditEditorModal();
-        alert('Аудит «' + nameVal + '» успешно сохранён в ЧЕРНОВИКИ на устройстве.');
+        updateStats();
+        alert('📁 Аудит «' + nameVal + '» успешно сохранён в ЧЕРНОВИКИ на устройстве.');
         return;
       }
 
-      // MODERATION SUBMISSION TO CLOUD DATABASE (SUPABASE)
+      // 2. Cloud Submission to Supabase (Moderation Queue)
       var finalDbStatus = (total >= 75) ? 'pending' : 'archived';
       var uploadedPhotos = currentEditingPhotos.slice();
 
@@ -5445,16 +5600,35 @@
           var insertRes = await supabaseClient.from('venues').insert([auditPayload]);
           if (insertRes.error) {
             console.error('Supabase insert error:', insertRes.error);
-            alert('Ошибка отправки в облачную базу: ' + insertRes.error.message + '\nОтчет временно сохранен в локальные черновики.');
-          } else {
-            console.log('✓ Audit inserted to Supabase with status:', finalDbStatus);
+            // Save to local drafts so work is never lost!
+            venues.unshift(draftRecord);
+            saveDB();
+            updateStats();
+            closeAuditEditorModal();
+            alert('⚠️ Ошибка отправки в облачную базу: ' + insertRes.error.message + '\n\nОтчёт «' + nameVal + '» надёжно сохранён в раздел «Черновики» на вашем устройстве.');
+            return;
           }
+          console.log('✓ Audit inserted to Supabase with status:', finalDbStatus);
         } catch(netErr) {
           console.warn('Network error when sending to Supabase:', netErr);
+          venues.unshift(draftRecord);
+          saveDB();
+          updateStats();
+          closeAuditEditorModal();
+          alert('⚠️ Ошибка сети при отправке: ' + netErr.message + '\n\nОтчёт «' + nameVal + '» сохранён в «Черновики» на устройстве.');
+          return;
         }
+      } else {
+        venues.unshift(draftRecord);
+        saveDB();
+        updateStats();
+        closeAuditEditorModal();
+        alert('⚠️ Облачный клиент Supabase не инициализирован. Отчёт сохранён в «Черновики» на устройстве.');
+        return;
       }
 
       closeAuditEditorModal();
+      updateStats();
 
       if (total >= 75) {
         alert('🚀 Отчёт по заведению «' + nameVal + '» (' + total + ' б., ' + grade + ') успешно отправлен на МОДЕРАЦИЮ в облачную базу данных!\n\nПосле подтверждения модератором карточка мгновенно появится в открытом гиде.');
@@ -5462,8 +5636,7 @@
         alert('📁 Отчёт по заведению «' + nameVal + '» (' + total + ' б.) сохранён в ЗАКРЫТЫЙ АРХИВ базы данных.\n\nПубликация заблокирована, так как итоговый балл ниже порога 75 баллов.');
       }
     }
-
-    // Keyboard navigation (Esc & Arrows)
+// Keyboard navigation (Esc & Arrows)
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closePhotoLightbox();
@@ -10805,6 +10978,145 @@
 
 
     
+    // ==========================================
+    // MODERATOR PANEL LOGIC (LIVE SUPABASE QUEUE)
+    // ==========================================
+    var pendingModerationList = [];
+
+    async function renderModeratorQueue() {
+      var listEl = document.getElementById('moderatorQueueList');
+      var countEl = document.getElementById('moderatorQueueCount');
+      var badgeEl = document.getElementById('adminPendingCountBadge');
+      if (!listEl) return;
+
+      listEl.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.75rem;">Загрузка отчетов из облака...</div>';
+
+      if (!supabaseClient) {
+        listEl.innerHTML = '<div style="text-align: center; padding: 1rem; color: #EF4444; font-size: 0.75rem;">База данных Supabase не подключена. Проверьте настройки сети.</div>';
+        if (countEl) countEl.innerText = '(0 заявок)';
+        return;
+      }
+
+      try {
+        var res = await supabaseClient
+          .from('venues')
+          .select('*')
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false });
+
+        if (res.error) {
+          console.error('Moderator queue error:', res.error);
+          listEl.innerHTML = '<div style="padding: 1rem; color: #EF4444; font-size: 0.75rem;">Ошибка загрузки очереди: ' + escapeHTML(res.error.message) + '</div>';
+          if (countEl) countEl.innerText = '(ошибка)';
+          return;
+        }
+
+        pendingModerationList = res.data || [];
+        var count = pendingModerationList.length;
+        if (countEl) countEl.innerText = '(' + count + ' на проверке)';
+        if (badgeEl) badgeEl.innerText = '(' + count + ')';
+
+        if (count === 0) {
+          listEl.innerHTML = '<div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.8125rem;">🎉 Очередь пуста! Все присланные аудиты проверены и обработаны.</div>';
+          return;
+        }
+
+        var html = '';
+        for (var i = 0; i < pendingModerationList.length; i++) {
+          var item = pendingModerationList[i];
+          var score = Number(item.total_score) || 0;
+          var isPassing = score >= 75;
+          var isQuality = score >= 90;
+          var gradeText = isQuality ? 'Знак Качества' : (isPassing ? 'Рекомендовано' : 'Не проходной (< 75)');
+          var gradeColor = isQuality ? 'var(--gold-deep)' : (isPassing ? '#10B981' : '#EF4444');
+          var dateStr = (item.created_at || '').split('T')[0] || 'Сегодня';
+
+          html += '<div style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem;">' +
+            '<div class="flex items-center justify-between" style="flex-wrap: wrap; gap: 0.5rem;">' +
+              '<div>' +
+                '<span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; color: var(--text-muted); font-weight: 800;">' + escapeHTML(item.city) + ' • ' + escapeHTML(item.category) + ' • ' + dateStr + '</span>' +
+                '<h4 class="font-serif" style="font-size: 1.15rem; font-weight: 900; margin: 0.15rem 0; color: var(--text-main);">' + escapeHTML(item.name) + '</h4>' +
+                '<div style="font-size: 0.75rem; color: var(--text-muted);">' + escapeHTML(item.address || 'Адрес не указан') + '</div>' +
+              '</div>' +
+              '<div style="text-align: right;">' +
+                '<div class="font-mono" style="font-size: 1.5rem; font-weight: 900; color: ' + gradeColor + ';">' + score + '<span style="font-size: 0.75rem; color: var(--text-muted);">/100</span></div>' +
+                '<span style="font-size: 0.6875rem; font-weight: 800; color: ' + gradeColor + ';">' + gradeText + '</span>' +
+              '</div>' +
+            '</div>' +
+
+            '<div style="font-size: 0.75rem; color: var(--text-body); background: var(--bg-surface); padding: 0.65rem; border-radius: 0.35rem; border: 1px solid var(--border-color); line-height: 1.5;">' +
+              escapeHTML(item.review || 'Заметки инспектора не добавлены.') +
+            '</div>' +
+
+            '<div class="flex items-center gap-2" style="margin-top: 0.25rem; flex-wrap: wrap;">';
+
+          if (isPassing) {
+            html += '<button type="button" onclick="approveVenueFromModeratorByIndex(' + i + ')" class="btn btn-dark" style="flex: 1.5; font-size: 0.75rem; padding: 0.5rem 0.75rem; font-weight: 800; background: var(--gold-deep); color: #18181B;">✅ Одобрить и опубликовать</button>';
+          } else {
+            html += '<div style="flex: 1.5; font-size: 0.6875rem; color: #EF4444; font-weight: 800; padding: 0.5rem; background: rgba(239,68,68,0.1); border-radius: 0.35rem; text-align: center;">⛔ Публикация заблокирована (Балл &lt; 75)</div>';
+          }
+
+          html += '<button type="button" onclick="archiveVenueFromModeratorByIndex(' + i + ')" class="btn btn-light" style="flex: 1; font-size: 0.75rem; padding: 0.5rem 0.75rem;">📁 В архив</button>' +
+            '</div>' +
+          '</div>';
+        }
+        listEl.innerHTML = html;
+
+      } catch(e) {
+        console.error('Moderator queue exception:', e);
+        listEl.innerHTML = '<div style="padding: 1rem; color: #EF4444; font-size: 0.75rem;">Ошибка подключения к Supabase: ' + escapeHTML(e.message) + '</div>';
+      }
+    }
+
+    async function approveVenueFromModeratorByIndex(idx) {
+      var item = pendingModerationList[idx];
+      if (!item) return;
+      if (!confirm('Подтвердите публикацию заведения «' + item.name + '» в открытый гид PLANKA GUIDE:')) return;
+      if (!supabaseClient) return;
+
+      try {
+        var res = await supabaseClient
+          .from('venues')
+          .update({ status: 'approved', updated_at: new Date().toISOString() })
+          .eq('id', item.id);
+
+        if (res.error) {
+          alert('Ошибка публикации: ' + res.error.message);
+          return;
+        }
+
+        alert('🌟 Заведение «' + item.name + '» успешно ОДОБРЕНО и опубликовано в гиде!');
+        renderModeratorQueue();
+        syncFromSupabase();
+      } catch(err) {
+        alert('Ошибка при обновлении статуса: ' + err.message);
+      }
+    }
+
+    async function archiveVenueFromModeratorByIndex(idx) {
+      var item = pendingModerationList[idx];
+      if (!item) return;
+      if (!confirm('Переместить отчет «' + item.name + '» в закрытый архив базы данных?')) return;
+      if (!supabaseClient) return;
+
+      try {
+        var res = await supabaseClient
+          .from('venues')
+          .update({ status: 'archived', updated_at: new Date().toISOString() })
+          .eq('id', item.id);
+
+        if (res.error) {
+          alert('Ошибка архивации: ' + res.error.message);
+          return;
+        }
+
+        alert('📁 Заведение «' + item.name + '» переведено в закрытый архив базы.');
+        renderModeratorQueue();
+      } catch(err) {
+        alert('Ошибка: ' + err.message);
+      }
+    }
+
     // ASYNC CLOUD DATABASE SYNC FROM SUPABASE (RLS 75+ FILTERED)
     async function syncFromSupabase() {
       if (!supabaseClient) return;
@@ -10837,12 +11149,13 @@
           var draftList = venues.filter(function(v) { return v.status === 'draft'; });
           var merged = draftList.concat(remoteVenues);
           venues = merged;
-          safeSetItem('planka_guide_db_v72', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v74', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
           updateStats();
           console.log('✓ Supabase synced successfully:', remoteVenues.length, 'approved venues loaded');
+          if (isAdmin && isModerator) renderModeratorQueue();
         }
       } catch(err) {
         console.warn('Supabase sync notice:', err);
