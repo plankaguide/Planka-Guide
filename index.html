@@ -100,6 +100,7 @@
   <!-- LEAFLET MAP ENGINE WITH SRI -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     /* CSS VARIABLES: DUAL LUXURY PALETTE */
@@ -2271,7 +2272,7 @@
           <p style="font-size: 0.75rem; color: #D4CEBE; line-height: 1.5; margin-bottom: 1rem;">
             Таблица со всеми 6 специализированными калькуляторами категорий, формулами, баллами и архивом в папке <code>02_Database_Table</code>:
           </p>
-          <a href="https://drive.google.com/file/d/18ifzcmQ8cEHMkndux9VQmShj8kQoG4fz/view?usp=drivesdk" target="_blank" class="btn btn-gold" style="display: block; text-align: center; text-decoration: none; font-weight: 900; font-size: 0.8125rem; padding: 0.75rem;">
+          <a href="https://drive.google.com/file/d/1VzVhiaGymAFS-FqGyzBTq2A72wceuKv6/view?usp=drivesdk" target="_blank" class="btn btn-gold" style="display: block; text-align: center; text-decoration: none; font-weight: 900; font-size: 0.8125rem; padding: 0.75rem;">
             📊 Открыть мастер-базу на Google Диске
           </a>
         </div>
@@ -2957,13 +2958,26 @@
       }
     }
 
+    
+    // ==========================================
+    // PLANKA GUIDE CLOUD DATABASE CONFIG (SUPABASE)
+    // ==========================================
+    const SUPABASE_URL = 'https://tyutrrvirpclwoatkmnj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_zCAarA02eoJArSegdR_14Q_4PMKFIeS';
+    var supabaseClient = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(e) {
+      console.warn('Supabase client init notice:', e);
+    }
+
     var initialVenues = [{"id": 1, "name": "White Rabbit", "format": "Fine Dining", "city": "Москва", "district": "Арбат", "address": "Смоленская площадь, 3 (16 этаж)", "avg_check": 7000, "price_tier": "₽₽₽₽", "segment": "Премиум ($$$$)", "chef": "Владимир Мухин", "concept": "Современная авторская русская кухня и сезонные фермерские продукты", "phone": "+7 (495) 510-51-01", "booking_url": "https://whiterabbit.ru/reserve", "no_booking": false, "status": "published", "date": "2026-08-10", "scores": {"food": 34, "wow": 15, "price": 14, "service": 15, "space": 9, "sanitation": 9}, "total_score": 96, "grade": "Знак Качества", "value_score": 8.8, "signature_dish": "Черная треска с муссом из трав", "dish_review": "По субъективной оценке инспектора — филигранное попадание в структуру рыбы, травяной соус с деликатной кислинкой и выверенный баланс умами.", "full_review": "По нашему авторскому впечатлению, White Rabbit сохраняет статус флагмана российской гастрономии. Панорамный вид гармонично сочетается с тонкой работой шефа над локальными ингредиентами.", "urban_notes": "Интеграция в высотную доминанту Смоленского пассажа, удобный отдельный лифт и панорамный обзор на исторический центр Москвы.", "ergonomics_notes": "Мягкий направленный вечерний свет, комфортная глубина кресел и выверенное зонирование столиков под куполом.", "video": "", "photos": ["https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Высокая точность термической обработки рыбы и морепродуктов", "Синхронная отдача горячих блюд за 14 минут по таймингу", "Высокий уровень чистоты открытой кухни и сервировки"], "cons": ["В вечерние часы пик на наш взгляд ощущается высокая плотность посадки в центральной зоне зала"], "vibe_tags": ["Романтический ужин", "Панорамный вид", "Авторская кухня", "Торжество"], "history": [{"date": "2026-08-10", "score": 96, "notes": "Плановый ежегодный аудит гида PLANKA."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 55.7485, "lng": 37.5833}}, {"id": 2, "name": "El Copitas Bar", "format": "Коктейльные бары", "city": "СПб", "district": "Центральный", "address": "ул. Колокольная, 2", "avg_check": 3200, "price_tier": "₽₽₽", "segment": "Высокий ($$$)", "chef": "Артем Перук & Игорь Зернов", "concept": "Секретный бар мексиканской культуры, агавы и авторской миксологии", "phone": "+7 (812) 941-71-68", "booking_url": "https://elcopitasbar.com", "no_booking": false, "status": "published", "date": "2026-08-14", "scores": {"food": 35, "wow": 15, "price": 15, "service": 15, "space": 10, "sanitation": 9}, "total_score": 99, "grade": "Знак Качества", "value_score": 9.6, "signature_dish": "Тако с томленой уткой и соусом моле", "dish_review": "Субъективно — эталонный баланс пряности и кислотности, мягкая кукурузная тортилья ручной работы и насыщенная бархатистая текстура мяса.", "full_review": "По нашей оценке, один из самых атмосферных проектов страны. Безупречное гостеприимство, фирменный монолитный лед и глубокие авторские кордиалы создают уникальный барный опыт.", "urban_notes": "Скрытая локация в классическом петербургском дворе-колодце, создающая интригу приватного спикизи-пространства.", "ergonomics_notes": "Уютная монолитная посадка вокруг общего стола, камерный теплый свет и акустический комфорт для живого общения.", "video": "", "photos": ["https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Выдающийся контакт и эрудиция барменов по напиткам на основе агавы", "Идеально прозрачный монолитный лед собственной заготовки", "Бесплатная подача питьевой воды и авторского комплимента гостю"], "cons": ["Камерный формат требует заблаговременного планирования визита через предварительную запись"], "vibe_tags": ["Авторские коктейли", "Атмосфера спикизи", "Гастрономический бар", "Дружеская встреча"], "history": [{"date": "2026-08-14", "score": 99, "notes": "Контрольная ревизия бара тайным гостем PLANKA GUIDE."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 59.9298, "lng": 30.3475}}, {"id": 3, "name": "Кафе Пушкинъ", "format": "Fine Dining", "city": "Москва", "district": "Тверской", "address": "Тверской бульвар, 26А", "avg_check": 5500, "price_tier": "₽₽₽₽", "segment": "Премиум ($$$$)", "chef": "Андрей Махов", "concept": "Русская дворянская кухня XIX века и легендарный сервис в стиле аптеки и библиотеки", "phone": "+7 (495) 739-00-33", "booking_url": "https://cafe-pushkin.ru", "no_booking": false, "status": "published", "date": "2026-08-18", "scores": {"food": 33, "wow": 14, "price": 14, "service": 15, "space": 9, "sanitation": 9}, "total_score": 94, "grade": "Знак Качества", "value_score": 8.6, "signature_dish": "Пожарская котлета с печеным картофелем", "dish_review": "По мнению тайного инспектора — хрестоматийная сочность рубленого филе цыпленка в хрустящих сухарях из белого хлеба с классическим сливочным грибным соусом.", "full_review": "По нашему впечатлению, классика дворянского стола и безупречный дореволюционный этикет официантов создают аутентичный исторический опыт.", "urban_notes": "Интеграция особняка в историческую ткань Тверского бульвара, удобная зона ожидания и круглосуточная доступность.", "ergonomics_notes": "Антикварная мебель, мягкий свет библиотечных ламп и деликатный акустический фон струнных инструментов.", "video": "", "photos": ["https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Эталонный классический сервис и сторителлинг официантов в историческом стиле", "Высокая скорость подачи супов и горячих блюд в пределах 12 минут", "Собственная кондитерская с широким ассортиментом авторских десертов"], "cons": ["Высокая наценка на базовые безалкогольные напитки и чайную карту"], "vibe_tags": ["Исторический центр", "Торжественный ужин", "Семейные традиции", "Бизнес-встреча"], "history": [{"date": "2026-08-18", "score": 94, "notes": "Ежегодная инспекция сервиса и блюд русской классики."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 55.7639, "lng": 37.6047}}, {"id": 4, "name": "Сойка (Soyka)", "format": "Рестораны & Бистро", "city": "Екатеринбург", "district": "Ленинский", "address": "ул. 8 Марта, 6", "avg_check": 2800, "price_tier": "₽₽₽", "segment": "Бизнес ($$$)", "chef": "Валентин Кузякин", "concept": "Азиатское городское бистро с акцентом на чистый вкус и морепродукты", "phone": "+7 (343) 289-40-50", "booking_url": "https://soyka.rest", "no_booking": false, "status": "published", "date": "2026-08-20", "scores": {"food": 33, "wow": 14, "price": 14, "service": 14, "space": 9, "sanitation": 9}, "total_score": 93, "grade": "Знак Качества", "value_score": 9.1, "signature_dish": "Тартар из гребешка с юдзу и хрустящим рисом", "dish_review": "По нашей оценке — свежайший дальневосточный гребешок, яркая цитрусовая заправка с соусом юдзу и приятная контрастная текстура риса.", "full_review": "По нашей оценке, один из сильнейших гастрономических проектов Екатеринбурга. Точная адаптация азиатских техник и внимательный сервис формируют высокий стандарт уральской кухни.", "urban_notes": "Активный уличный фасад на набережной Исети, открытые летние окна и пешеходная доступность от Площади 1905 года.", "ergonomics_notes": "Продуманная дистанция между столами (1.1 м), комфортные стулья и акцентная подсветка блюд.", "video": "", "photos": ["https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Отличная свежесть сырой рыбы и морепродуктов", "Сбалансированная винная карта с упором на биодинамику и петнаты", "Быстрая отдача закусок за 8 минут"], "cons": ["Ограниченное пространство в зоне гардероба при полной посадке"], "vibe_tags": ["Паназия", "Набережная", "Модный ужин", "Винный бар"], "history": [{"date": "2026-08-20", "score": 93, "notes": "Инспекция уральского бистро."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 56.8378, "lng": 60.5975}}, {"id": 5, "name": "Гастроли (Gastroli)", "format": "Рестораны & Бистро", "city": "Екатеринбург", "district": "Ленинский", "address": "ул. 8 Марта, 4", "avg_check": 2500, "price_tier": "₽₽₽", "segment": "Бизнес ($$$)", "chef": "Эдуард Архипов", "concept": "Европейское бистро с открытым огнем, дровяной печью и комфортной едой", "phone": "+7 (343) 378-00-08", "booking_url": "https://gastroli.rest", "no_booking": false, "status": "published", "date": "2026-08-19", "scores": {"food": 32, "wow": 14, "price": 14, "service": 14, "space": 9, "sanitation": 9}, "total_score": 92, "grade": "Знак Качества", "value_score": 9.2, "signature_dish": "Пицца из дровяной печи с уткой и вяленой клюквой", "dish_review": "По оценке тайного гостя — воздушное леопардовое тесто долгой ферментации, сочное мясо утки и яркий кисло-сладкий акцент лесных ягод.", "full_review": "По нашему впечатлению, «Гастроли» задают высокую планку для бистро в регионах. Живой огонь дровяной печи и расслабленная европейская атмосфера создают ощущение постоянного праздника.", "urban_notes": "Широкие витринные окна, уютный диалог с улицей 8 Марта и удобный пандус на входе.", "ergonomics_notes": "Грамотное зонирование контактного бара и открытой кухни с печью, теплая цветовая температура 2700K.", "video": "", "photos": ["https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Аутентичная неаполитанская пицца на тесте 48 часов расстойки", "Дружелюбный контактный сервис без излишнего официоза", "Качественная система вентиляции зала при открытом гриле"], "cons": ["Высокий уровень шума в пиковые часы пятницы (около 75 дБ)"], "vibe_tags": ["Дровяная печь", "Встреча друзей", "Уютное бистро", "Крафтовое пиво"], "history": [{"date": "2026-08-19", "score": 92, "notes": "Плановый аудит кухни и печи."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 56.8382, "lng": 60.5981}}, {"id": 6, "name": "Duo Gastrobar", "format": "Рестораны & Бистро", "city": "СПб", "district": "Центральный", "address": "ул. Кирочная, 8А", "avg_check": 2600, "price_tier": "₽₽₽", "segment": "Бизнес ($$$)", "chef": "Дмитрий Блинов & Ренат Маликов", "concept": "Культовый гастробар новой волны: минимализм, чистый вкус и доступный деликатес", "phone": "+7 (812) 994-54-43", "booking_url": "https://duoband.ru/duo", "no_booking": false, "status": "published", "date": "2026-08-15", "scores": {"food": 32, "wow": 14, "price": 14, "service": 14, "space": 8, "sanitation": 9}, "total_score": 91, "grade": "Знак Качества", "value_score": 9.4, "signature_dish": "Тартар из говядины с муссом из пармезана", "dish_review": "Субъективно — эталонная текстура вырезки крупной ручной рубки, глубокий насыщенный соус и воздушный солоноватый сырный мусс.", "full_review": "По нашей оценке, классический пример гастрономического минимализма, где во главе угла стоит чистый вкус продукта и честная ценовая политика.", "urban_notes": "Компактная входная группа в историческом доходном доме на Кирочной, безбарьерный вход.", "ergonomics_notes": "Плотная европейская расстановка столиков, способствующая динамичной атмосфере гастробара.", "video": "", "photos": ["https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Превосходный баланс вкусов и соусов в каждом блюде", "Честный и понятный счет без скрытых ресторанных наценок", "Быстрая отдача горячих блюд за 11 минут"], "cons": ["Компактный зал и плотная посадка требуют бронирования за неделю"], "vibe_tags": ["Гастробар", "Культовое место", "Лаконичное меню", "Ужин для двоих"], "history": [{"date": "2026-08-15", "score": 91, "notes": "Аудит петербургского флагмана Duoband."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 59.9439, "lng": 30.3547}}, {"id": 7, "name": "Кофемания", "format": "Спешелти-кофейни", "city": "Москва", "district": "Тверской", "address": "ул. Большая Никитская, 13", "avg_check": 2300, "price_tier": "₽₽", "segment": "Бизнес ($$$)", "chef": "Глеб Невейкин", "concept": "Легендарная сеть спешелти-кофеен ресторанного формата с безупречным сервисом", "phone": "+7 (495) 777-00-44", "booking_url": "https://coffeemania.ru", "no_booking": true, "status": "published", "date": "2026-08-17", "scores": {"food": 31, "wow": 13, "price": 13, "service": 15, "space": 9, "sanitation": 9}, "total_score": 90, "grade": "Знак Качества", "value_score": 7.9, "signature_dish": "Кофе Раф Ванильный и сырники со сметаной", "dish_review": "По нашему мнению — нежнейшая сливочная пенка, натуральная ваниль и классические сырники из фермерского творога с золотистой корочкой.", "full_review": "По нашей оценке, проект остается эталоном стабильности сервиса и кофейной классики в Москве, хотя ценовая планка находится на высоком уровне.", "urban_notes": "Уютная летняя веранда на Большой Никитской, активный пешеходный трафик у Консерватории.", "ergonomics_notes": "Удобные мягкие диваны, широкие столы и идеальная акустическая атмосфера для деловых встреч.", "video": "", "photos": ["https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Стабильно высокое качество эспрессо и авторских молочных напитков", "Один из лучших стандартов сервиса среди кофейных заведений", "Свежая выпечка и десерты собственного производства"], "cons": ["Высокий средний чек для формата кофейни"], "vibe_tags": ["Спешелти кофе", "Завтраки целый день", "Деловая встреча", "Московская классика"], "history": [{"date": "2026-08-17", "score": 90, "notes": "Контрольная закупка кофе и завтраков."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 55.7565, "lng": 37.6042}}, {"id": 8, "name": "Буше Пекарня", "format": "Ремесленные пекарни", "city": "СПб", "district": "Адмиралтейский", "address": "ул. Малая Морская, 7", "avg_check": 850, "price_tier": "₽", "segment": "Доступный ($$)", "chef": "Команда пекарей Буше", "concept": "Петербургская ремесленная пекарня: хлеб на закваске, круассаны и спешелти-кофе", "phone": "+7 (812) 640-16-16", "booking_url": "https://bushe.ru", "no_booking": true, "status": "published", "date": "2026-08-12", "scores": {"food": 32, "wow": 13, "price": 14, "service": 13, "space": 9, "sanitation": 9}, "total_score": 90, "grade": "Знак Качества", "value_score": 9.5, "signature_dish": "Слоеный круассан с миндальным кремом", "dish_review": "Субъективно — эталонное хрустящее слоеное тесто на натуральном сливочном масле 82.5% с обильной ореховой начинкой франжипан.", "full_review": "По нашему впечатлению, «Буше» держит звание главного петербургского амбассадора ремесленного хлебопечения и качественного городского кофе.", "urban_notes": "Уютная витринная посадка с видом на Малую Морскую, безбарьерный доступ и удобная кофейная станция.", "ergonomics_notes": "Эргономичные деревянные столы, розетки для работы за ноутбуком и приятный дневной свет.", "video": "", "photos": ["https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Честный ремесленный хлеб длительной холодной ферментации", "Использование исключительно натурального сливочного масла без гидрожиров", "Доступный средний чек при высоком качестве зерна и слойки"], "cons": ["Периодические очереди к кассе в утренние часы с 9:00 до 10:30"], "vibe_tags": ["Свежая выпечка", "Круассаны", "Завтрак", "Работа с ноутбуком"], "history": [{"date": "2026-08-12", "score": 90, "notes": "Аудит слоеного теста и заквасочного хлеба."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 59.9365, "lng": 30.3152}}, {"id": 9, "name": "Engels Кофе и Вафли", "format": "Спешелти-кофейни", "city": "Екатеринбург", "district": "Октябрьский", "address": "ул. Малышева, 21/4", "avg_check": 1100, "price_tier": "₽", "segment": "Доступный ($$)", "chef": "Валентин Кузякин", "concept": "Культовое кофейное пространство: авторские вафли, фильтр-кофе и бранчи", "phone": "+7 (343) 310-20-40", "booking_url": "https://engels.rest", "no_booking": true, "status": "published", "date": "2026-08-16", "scores": {"food": 32, "wow": 14, "price": 14, "service": 13, "space": 9, "sanitation": 9}, "total_score": 91, "grade": "Знак Качества", "value_score": 9.3, "signature_dish": "Хрустящая вафля с лососем слабой соли и яйцом пашот", "dish_review": "По оценке тайного инспектора — идеальная хрустящая корочка вафли, нежный слабосоленый лосось и текучий желток яйца пашот с соусом голландез.", "full_review": "По нашей оценке, флагман уральской культуры бранчей. Живая атмосфера, чистый фильтр-кофе и неизменно качественная отдача блюд.", "urban_notes": "Яркая входная группа на оживленном перекрестке Малышева, велопарковка и контактная летняя зона.", "ergonomics_notes": "Удобные столы, розетки для ноутбуков и ненавязчивая акустика инди-поп на уровне 66 дБ.", "video": "", "photos": ["https://images.unsplash.com/photo-1562376552-0d160a2f238d?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Отличное качество зерна свежей обжарки (SCA 85+)", "Большие сытные порции вафель с качественными ингредиентами", "Быстрая отдача напитков в течение 3 минут"], "cons": ["Высокая загрузка в выходные дни (ожидание посадки до 15 минут)"], "vibe_tags": ["Бранч", "Вафли", "Спешелти кофе", "Городское кафе"], "history": [{"date": "2026-08-16", "score": 91, "notes": "Проверка фильтр-кофе и горячих вафель."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 56.8329, "lng": 60.6015}}, {"id": 10, "name": "Ku: Рамен Изакая", "format": "Рестораны & Бистро", "city": "Москва", "district": "Пресненский", "address": "Смоленская площадь, 8", "avg_check": 1800, "price_tier": "₽₽", "segment": "Доступный ($$)", "chef": "Денис Лим", "concept": "Аутентичный японский рамен-бар: наваристые бульоны 16 часов варки и лапша собственного производства", "phone": "+7 (495) 780-00-11", "booking_url": "https://kuramen.ru", "no_booking": true, "status": "published", "date": "2026-08-11", "scores": {"food": 33, "wow": 14, "price": 14, "service": 13, "space": 8, "sanitation": 9}, "total_score": 91, "grade": "Знак Качества", "value_score": 9.4, "signature_dish": "Тонкоцу рамен на наваристом свином бульоне", "dish_review": "По нашему впечатлению — густой шелковистый бульон глубокой 16-часовой выварки, упругая щелочная лапша правильной плотности и тающее во рту мясо чашу.", "full_review": "По нашей оценке, один из лучших рамен-баров столицы с бескомпромиссным отношением к технологии приготовления японского бульона.", "urban_notes": "Удобное расположение в гостинице «Азимут» напротив МИДа, быстрый доступ со Садового кольца.", "ergonomics_notes": "Контактная посадка у открытой кухни, позволяющая наблюдать за варкой лапши и сборкой боулов.", "video": "", "photos": ["https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80"], "private_photos": [], "pros": ["Аутентичная рецептура тонкоцу без искусственных усилителей вкуса", "Свежая лапша собственного производства на японском оборудовании", "Быстрая отдача горячего рамена за 6 минут"], "cons": ["Лаконичная десертная карта"], "vibe_tags": ["Рамен", "Японская кухня", "Быстрый обед", "Изакая"], "history": [{"date": "2026-08-11", "score": 91, "notes": "Аудит плотности бульона и щелочной лапши."}], "audit_count": 1, "score_delta": 0, "coords": {"lat": 55.7478, "lng": 37.5842}}];
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v70') || 
-                   localStorage.getItem('planka_guide_db_v69') || 
-                   localStorage.getItem('planka_guide_db_v68');
+      var stored = localStorage.getItem('planka_guide_db_v71') || localStorage.getItem('planka_guide_db_v70') || localStorage.getItem('planka_guide_db_v69') || localStorage.getItem('planka_guide_db_v68');
       if (stored) {
         var parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -3059,7 +3073,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v70', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v71', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -3716,7 +3730,7 @@
         var imgUrl = (v.photos && v.photos.length > 0) ? sanitizeMediaSrc(v.photos[0]) : fallback;
 
         slidesHtml += '<div class="hero-slide">' +
-          '<img src="' + imgUrl + '" class="hero-slide-img" alt="' + escapeHTML(v.name) + '" decoding="async" referrerpolicy="no-referrer" onerror="handleMediaImgError(this, ' + v.id + ')">' +
+          '<img src="' + imgUrl + '" class="hero-slide-img" alt="' + escapeHTML(v.name) + '" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=\'' + fallback + '\';">' +
         '</div>';
         dotsHtml += '<div class="hero-dot ' + (i === (heroFeaturedIndex % topVenues.length) ? 'active' : '') + '" onclick="setHeroSlide(' + i + ')"></div>';
       }
@@ -3822,7 +3836,15 @@
         var tv = topVenues[i];
                 var fallbackUri = getVenueFallbackSvg(tv.name, tv.format, tv.city);
         var coverImg = (tv.photos && tv.photos.length > 0) ? sanitizeMediaSrc(tv.photos[0]) : fallbackUri;
-        var coverMediaHtml = '<img src="' + coverImg + '" class="card-cover-media" alt="' + escapeHTML(tv.name) + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="handleMediaImgError(this, ' + tv.id + ')">';
+        var coverMediaHtml = '<img src="' + coverImg + '" class="card-cover-media" alt="' + escapeHTML(tv.name) + '" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=\'' + fallbackUri + '\';">';
+        if (tv.video) {
+          coverMediaHtml = '<video autoplay loop muted playsinline webkit-playsinline preload="metadata" class="card-cover-media" style="width: 100%; height: 100%; object-fit: cover; background: #111113;" poster="' + fallbackUri + '">' +
+            '<source src="' + escapeHTML(tv.video) + '" type="video/mp4">' +
+          '</video>';
+        } else {
+          var coverImg = (tv.photos && tv.photos.length > 0) ? tv.photos[0] : fallbackUri;
+          coverMediaHtml = '<img src="' + coverImg + '" class="card-cover-media" alt="' + escapeHTML(tv.name) + '" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=\'' + fallbackUri + '\';">';
+        }
 
         var vibePills = (tv.vibe_tags || []).slice(0, 2).map(function(t){ return '<span class="vibe-tag-pill">' + escapeHTML(t) + '</span>'; }).join(' ');
 
@@ -3866,36 +3888,7 @@
     // Render Catalog
     
     // OFFLINE & UNBLOCKED LUXURY SVG PLACEHOLDER GENERATOR FOR RUSSIAN NETWORKS
-        // MULTI-TIER ANTI-BLOCKING IMAGE FAILOVER ENGINE (WORKS 100% IN RF & GLOBALLY)
-    function handleMediaImgError(imgEl, venueId) {
-      if (!imgEl) return;
-      var v = null;
-      if (typeof venueId === 'number' || typeof venueId === 'string') {
-        for (var i = 0; i < venues.length; i++) {
-          if (venues[i].id == venueId) { v = venues[i]; break; }
-        }
-      }
-      var name = v ? v.name : 'PLANKA GUIDE';
-      var format = v ? v.format : '';
-      var city = v ? v.city : '';
-      var curSrc = imgEl.src || '';
-
-      // Tier 1: Try high-speed unblocked image proxy CDN
-      if (curSrc.indexOf('images.unsplash.com') !== -1 && curSrc.indexOf('wsrv.nl') === -1) {
-        imgEl.onerror = function() {
-          imgEl.onerror = null;
-          imgEl.src = getVenueFallbackSvg(name, format, city);
-        };
-        imgEl.src = 'https://wsrv.nl/?url=' + encodeURIComponent(curSrc) + '&w=800&q=80&output=webp';
-        return;
-      }
-
-      // Tier 2: Final fallback to luxury SVG
-      imgEl.onerror = null;
-      imgEl.src = getVenueFallbackSvg(name, format, city);
-    }
-
-function getVenueFallbackSvg(name, format, city) {
+    function getVenueFallbackSvg(name, format, city) {
       var cleanName = (name || 'PLANKA GUIDE').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       var cleanCity = (city || '').replace(/&/g, '&amp;');
       var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">' +
@@ -3977,7 +3970,15 @@ function getVenueFallbackSvg(name, format, city) {
         
                         var fallbackUri = getVenueFallbackSvg(item.name, item.format, item.city);
         var coverImg = (item.photos && item.photos.length > 0) ? sanitizeMediaSrc(item.photos[0]) : fallbackUri;
-        var coverMediaHtml = '<img src="' + coverImg + '" class="card-cover-media" alt="' + escapeHTML(item.name) + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="handleMediaImgError(this, ' + item.id + ')">';
+        var coverMediaHtml = '<img src="' + coverImg + '" class="card-cover-media" alt="' + escapeHTML(item.name) + '" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=\'' + fallbackUri + '\';">';
+        if (item.video) {
+          coverMediaHtml = '<video autoplay loop muted playsinline webkit-playsinline preload="metadata" class="card-cover-media" style="width: 100%; height: 100%; object-fit: cover; background: #111113;" poster="' + fallbackUri + '">' +
+            '<source src="' + escapeHTML(item.video) + '" type="video/mp4">' +
+          '</video>';
+        } else {
+          var coverImg = (item.photos && item.photos.length > 0) ? item.photos[0] : fallbackUri;
+          coverMediaHtml = '<img src="' + coverImg + '" class="card-cover-media" alt="' + escapeHTML(item.name) + '" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=\'' + fallbackUri + '\';">';
+        }
 
         var vibePills = (item.vibe_tags || []).slice(0, 2).map(function(t){ return '<span class="vibe-tag-pill">' + t + '</span>'; }).join(' ');
 
@@ -4477,7 +4478,7 @@ function getVenueFallbackSvg(name, format, city) {
           displayPhotos.push(photos[0]);
         }
         for (var i = 0; i < 3; i++) {
-          var fallbackUri = getVenueFallbackSvg(activeModalVenue.name, activeModalVenue.format, activeModalVenue.city); phtml += '<img src="' + displayPhotos[i] + '" class="dossier-triptych-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="handleMediaImgError(this, ' + activeModalVenue.id + ')" onclick="openPhotoLightboxDirect(' + activeModalVenue.id + ', event)" alt="Фото заведения">';
+          var fallbackUri = getVenueFallbackSvg(activeModalVenue.name, activeModalVenue.format, activeModalVenue.city); phtml += '<img src="' + displayPhotos[i] + '" class="dossier-triptych-img" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=\'' + fallbackUri + '\';" onclick="openPhotoLightboxDirect(activeModalVenue.id, event)" alt="Фото заведения">';
         }
       } else {
         phtml = '<div style="grid-column: 1/-1; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.8125rem;">Фотографии инспекции пока не добавлены</div>';
@@ -4776,38 +4777,7 @@ function getVenueFallbackSvg(name, format, city) {
       closeModal('syncModal');
     }
 
-        // ASYNC FRESH DATABASE LOADER FROM GITHUB PAGES
-    function fetchFreshVenues() {
-      if (window.location.protocol === 'file:') return;
-      fetch('./venues.json?t=' + Date.now(), { cache: 'no-cache' })
-        .then(function(res) {
-          if (res.ok) return res.json();
-          throw new Error('Network response not ok');
-        })
-        .then(function(remoteVenues) {
-          if (Array.isArray(remoteVenues) && remoteVenues.length > 0) {
-            var draftList = venues.filter(function(v) { return v.status === 'draft'; });
-            var remoteMap = {};
-            for (var i = 0; i < remoteVenues.length; i++) {
-              remoteMap[remoteVenues[i].id] = remoteVenues[i];
-            }
-            var merged = [];
-            for (var d = 0; d < draftList.length; d++) {
-              merged.push(draftList[d]);
-            }
-            for (var r = 0; r < remoteVenues.length; r++) {
-              merged.push(remoteVenues[r]);
-            }
-            venues = merged;
-            saveDB();
-          }
-        })
-        .catch(function(err) {
-          console.log('Using local/cached dataset:', err.message);
-        });
-    }
-
-function exportDatabaseJSON() {
+    function exportDatabaseJSON() {
       var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(venues, null, 2));
       var dl = document.createElement('a');
       dl.setAttribute("href", dataStr);
@@ -10755,6 +10725,51 @@ function exportDatabaseJSON() {
 
 
 
+    
+    // ASYNC CLOUD DATABASE SYNC FROM SUPABASE (RLS 75+ FILTERED)
+    async function syncFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        var res = await supabaseClient
+          .from('venues')
+          .select('*')
+          .order('total_score', { ascending: false });
+
+        if (!res.error && Array.isArray(res.data) && res.data.length > 0) {
+          var remoteVenues = res.data.map(function(item) {
+            var v = item.details || {};
+            v.id = item.id;
+            v.name = item.name;
+            v.city = item.city;
+            v.format = item.category;
+            v.address = item.address;
+            v.scores = item.scores;
+            v.total_score = Number(item.total_score);
+            v.status = item.status;
+            if (item.media_urls && Array.isArray(item.media_urls) && item.media_urls.length > 0) {
+              v.photos = item.media_urls;
+            }
+            if (item.review) {
+              v.full_review = item.review;
+            }
+            return v;
+          });
+
+          var draftList = venues.filter(function(v) { return v.status === 'draft'; });
+          var merged = draftList.concat(remoteVenues);
+          venues = merged;
+          safeSetItem('planka_guide_db_v71', JSON.stringify(venues));
+          renderHeroSlides();
+          renderSelection();
+          renderVenues();
+          updateStats();
+          console.log('✓ Supabase synced successfully:', remoteVenues.length, 'approved venues loaded');
+        }
+      } catch(err) {
+        console.warn('Supabase sync notice:', err);
+      }
+    }
+
     // Start Application
     checkTheme();
     checkCookieConsent();
@@ -10764,6 +10779,7 @@ function exportDatabaseJSON() {
     renderSelection();
     renderVenues();
     startHeroTimer();
+    syncFromSupabase();
   </script>
 </body>
 </html>

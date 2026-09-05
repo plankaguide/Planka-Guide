@@ -1,4 +1,4 @@
-const CACHE_NAME = 'planka-guide-v70-cache';
+const CACHE_NAME = 'planka-guide-v71-cache';
 
 const STATIC_ASSETS = [
   './',
@@ -7,14 +7,15 @@ const STATIC_ASSETS = [
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,700&display=swap',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('SW static cache warning (non-fatal):', err);
+        console.warn('SW cache notice:', err);
       });
     })
   );
@@ -65,8 +66,7 @@ self.addEventListener('fetch', (event) => {
   if (
     url.hostname.includes('unsplash.com') ||
     url.hostname.includes('wsrv.nl') ||
-    url.hostname.includes('weserv.nl') ||
-    url.hostname.includes('qrserver.com') ||
+    url.hostname.includes('supabase.co') ||
     url.hostname.includes('fonts.gstatic.com') ||
     event.request.destination === 'image'
   ) {
@@ -90,8 +90,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network First for HTML and venues.json to get latest updates, fallback to cache
-  if (event.request.mode === 'navigate' || url.pathname.endsWith('venues.json')) {
+  // Network First for HTML, fallback to cache
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('index.html') || url.pathname.endsWith('venues.json')) {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
