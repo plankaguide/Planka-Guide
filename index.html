@@ -2188,21 +2188,48 @@
     </div>
   </div>
 
-  <!-- COOKIE & LEGAL CONSENT BANNER -->
-  <div id="cookieBanner" style="position: fixed; bottom: 1.5rem; right: 1.5rem; max-width: 440px; z-index: 999; background: #18181B; color: #FFF; padding: 1.35rem; border-radius: 0.5rem; border: 1px solid #27272A; box-shadow: 0 20px 30px -5px rgba(0,0,0,0.6); display: none;">
-    <div style="font-size: 0.75rem; line-height: 1.45; margin-bottom: 0.85rem;">
-      <strong style="display: block; color: #FFF; font-size: 0.8125rem; margin-bottom: 0.25rem;">Правовое уведомление и Cookie</strong>
-      Сайт PLANKA GUIDE публикует субъективные оценочные суждения потребителей (ст. 29 Конституции РФ) и использует технические cookie для кэширования аудита.
-    </div>
-    <div class="flex items-center gap-2">
-      <button onclick="openLegalModal()" type="button" class="btn btn-light" style="flex: 1; font-size: 0.6875rem;">Политика сайта</button>
-      <button onclick="acceptCookieConsent()" type="button" class="btn btn-dark" style="flex: 1;">Понятно и согласен</button>
+  <!-- FULL BLOCKING COOKIE & LEGAL CONSENT MODAL WITH BACKDROP BLUR -->
+  <div id="cookieBanner" class="modal-overlay" style="position: fixed; inset: 0; z-index: 99999; background: rgba(10, 10, 12, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: none; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="modal-box text-center" style="max-width: 540px; width: 100%; padding: 2.5rem 2.25rem; background: var(--bg-surface); border: 1.5px solid var(--border-color); border-radius: 0.85rem; box-shadow: 0 35px 60px -15px rgba(0,0,0,0.75); position: relative;" onclick="event.stopPropagation()">
+      <div class="brand-mark" style="margin: 0 auto 1.25rem auto; width: 3.5rem; height: 3.5rem; font-size: 1.6rem;">P</div>
+      <span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; font-weight: 800; color: var(--gold-deep); letter-spacing: 0.14em;">ПРАВОВОЙ СТАТУС И СТАНДАРТ</span>
+      <h3 class="font-serif" style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin: 0.35rem 0 0.85rem 0;">Согласие с условиями PLANKA GUIDE</h3>
+      
+      <p style="font-size: 0.8125rem; color: var(--text-body); line-height: 1.6; margin-bottom: 1.25rem; text-align: left;">
+        Добро пожаловать в <strong>PLANKA GUIDE</strong> — независимый экспертно-аналитический рейтинг предприятий общественного питания. 
+        Для доступа к каталогу и досье инспекций подтвердите согласие со следующими базовыми положениями регламента:
+      </p>
+
+      <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem 1.15rem; margin-bottom: 1.5rem; text-align: left; font-size: 0.75rem; color: var(--text-body); line-height: 1.55; display: flex; flex-direction: column; gap: 0.6rem;">
+        <div style="display: flex; gap: 0.65rem; align-items: flex-start;">
+          <span style="color: var(--gold-deep); font-size: 0.875rem; line-height: 1;">⚖️</span>
+          <div><strong>Субъективные оценочные суждения (ст. 29 Конституции РФ, ст. 152 ГК РФ)</strong>: рейтинги и баллы являются авторским мнением тайных инспекторов на дату визита.</div>
+        </div>
+        <div style="display: flex; gap: 0.65rem; align-items: flex-start;">
+          <span style="color: var(--gold-deep); font-size: 0.875rem; line-height: 1;">🛡</span>
+          <div><strong>Политика конфиденциальности (152-ФЗ)</strong>: гид не собирает персональные данные граждан, обрабатывая только открытые данные заведений.</div>
+        </div>
+        <div style="display: flex; gap: 0.65rem; align-items: flex-start;">
+          <span style="color: var(--gold-deep); font-size: 0.875rem; line-height: 1;">🍪</span>
+          <div><strong>Файлы Cookie и кэш PWA</strong>: мы используем технические файлы и локальную память браузера для сохранения темы, избранного и офлайн-доступа.</div>
+        </div>
+        <div style="display: flex; gap: 0.65rem; align-items: flex-start;">
+          <span style="color: var(--gold-deep); font-size: 0.875rem; line-height: 1;">🔞</span>
+          <div><strong>Возрастное ограничение 18+</strong>: сайт содержит обзоры барных концепций и ориентирован исключительно на совершеннолетних лиц.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <button type="button" onclick="acceptCookieConsent()" class="btn btn-dark" style="width: 100%; padding: 0.95rem; font-weight: 800; font-size: 0.875rem; background: var(--gold-deep); color: #18181B; box-shadow: 0 4px 15px rgba(197,168,128,0.35);">
+          ✓ Принять регламент и войти в гид
+        </button>
+        <button type="button" onclick="openLegalModal('privacy')" class="btn btn-light" style="width: 100%; padding: 0.65rem; font-size: 0.75rem; font-weight: 700;">
+          Ознакомиться с полным текстом регламента
+        </button>
+      </div>
     </div>
   </div>
 
-  
-  
-  
   <!-- MODAL: RICH INSPECTOR MANUAL & CATEGORY-SPECIFIC SCORING CRITERIA -->
   <div id="inspectorManualModal" class="modal-overlay" onclick="closeInspectorManualModal()">
     <div class="modal-box" style="max-width: 900px; padding: 2.25rem;" onclick="event.stopPropagation()">
@@ -2462,7 +2489,7 @@
             <li><code>planka_favorites</code> — Локальный список закладок («Избранное»), выбранных гостем. На внешние серверы не передается.</li>
             <li><code>planka_compare</code> — Модуль сопоставления ресторанов (до 3 позиций для сравнения характеристик).</li>
             <li><code>planka_active_form_draft</code> — Непрерывный автосейв черновика аудита инспектора, предотвращающий потерю замеров при случайном обновлении вкладки.</li>
-            <li><code>planka-guide-v82-cache</code> — Системный офлайн-кэш Service Worker, обеспечивающий работу карты и каталога даже при отсутствии сотовой связи.</li>
+            <li><code>planka-guide-v83-cache</code> — Системный офлайн-кэш Service Worker, обеспечивающий работу карты и каталога даже при отсутствии сотовой связи.</li>
           </ul>
 
           <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">3. Отказ от коммерческих и поведенческих трекеров</h4>
@@ -3321,7 +3348,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v82') || 
+      var stored = localStorage.getItem('planka_guide_db_v83') || 
                    localStorage.getItem('planka_guide_db_v78') || 
                    localStorage.getItem('planka_guide_db_v77') || 
                    localStorage.getItem('planka_guide_db_v76') || 
@@ -3457,7 +3484,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v82', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v83', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -5426,7 +5453,10 @@
     function acceptCookieConsent() {
       try { safeSetItem('planka_cookie_consent', 'true'); } catch(e) {}
       var banner = document.getElementById('cookieBanner');
-      if (banner) banner.style.display = 'none';
+      if (banner) {
+        banner.style.display = 'none';
+      }
+      document.body.style.overflow = '';
     }
 
     function checkCookieConsent() {
@@ -5434,7 +5464,13 @@
       try { accepted = localStorage.getItem('planka_cookie_consent') === 'true'; } catch(e) {}
       var banner = document.getElementById('cookieBanner');
       if (banner) {
-        banner.style.display = accepted ? 'none' : 'block';
+        if (!accepted) {
+          banner.style.display = 'flex';
+          document.body.style.overflow = 'hidden'; // BLOCK SCROLLING COMPLETELY UNTIL ACCEPTED
+        } else {
+          banner.style.display = 'none';
+          document.body.style.overflow = '';
+        }
       }
     }
 
@@ -11881,7 +11917,7 @@
           // Deduplicate remote venues and local drafts by name and ID
           var combined = remoteVenues.concat(draftList);
           venues = deduplicateVenues(combined);
-          safeSetItem('planka_guide_db_v82', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v83', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
