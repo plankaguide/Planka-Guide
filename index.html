@@ -2240,44 +2240,281 @@
 
   <!-- MODAL: LEGAL POLICY (AIRTIGHT CONSTITUTIONAL & REGULATORY SHIELD) -->
   <div id="legalModal" class="modal-overlay" onclick="closeLegalModal()">
-    <div class="modal-box" style="max-width: 720px; padding: 2.25rem;" onclick="event.stopPropagation()">
+    <div class="modal-box" style="max-width: 900px; width: 95vw; padding: 2.25rem 2.5rem; max-height: 90vh; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
+      
+      <!-- Modal Header -->
       <div class="flex items-center justify-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div>
-          <span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; font-weight: 800; color: var(--gold-deep);">ПРАВОВОЙ СТАТУС И СТАНДАРТ</span>
-          <h3 class="font-serif" style="font-size: 1.35rem; font-weight: 900; color: inherit; margin-top: 0.15rem;">Юридический регламент PLANKA GUIDE</h3>
+          <span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; font-weight: 800; color: var(--gold-deep); letter-spacing: 0.12em;">КОРПОРАТИВНЫЙ ЮРИДИЧЕСКИЙ РЕГЛАМЕНТ И СТАНДАРТ</span>
+          <h3 class="font-serif" style="font-size: 1.45rem; font-weight: 900; color: inherit; margin-top: 0.2rem;">Правовой центр и методология PLANKA GUIDE</h3>
         </div>
-        <button onclick="closeLegalModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2.25rem; height: 2.25rem; border-radius: 9999px; cursor: pointer; font-weight: 900;">✕</button>
+        <button onclick="closeLegalModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2.25rem; height: 2.25rem; border-radius: 9999px; cursor: pointer; font-weight: 900;" title="Закрыть">✕</button>
       </div>
 
-      <div style="font-size: 0.8125rem; color: var(--text-body); line-height: 1.65; display: flex; flex-direction: column; gap: 1.25rem; max-height: 68vh; overflow-y: auto; padding-right: 0.5rem;">
+      <!-- Legal Navigation Tabs (Corporate Tabbed Architecture) -->
+      <div style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); -webkit-overflow-scrolling: touch;">
+        <button type="button" id="legalTabBtn_privacy" onclick="switchLegalTab('privacy')" class="btn btn-dark" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">📜 Политика конфиденциальности (152-ФЗ)</button>
+        <button type="button" id="legalTabBtn_terms" onclick="switchLegalTab('terms')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">⚖️ Пользовательское соглашение</button>
+        <button type="button" id="legalTabBtn_opinions" onclick="switchLegalTab('opinions')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">🏛 Оценочные суждения (ст. 152 ГК РФ)</button>
+        <button type="button" id="legalTabBtn_charter" onclick="switchLegalTab('charter')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">🕵️ Манифест независимости (Стандарт Michelin)</button>
+        <button type="button" id="legalTabBtn_cookies" onclick="switchLegalTab('cookies')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">🍪 Cookies и локальный кэш</button>
+        <button type="button" id="legalTabBtn_trademark" onclick="switchLegalTab('trademark')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">🎖 Знак Качества и диплом</button>
+      </div>
+
+      <!-- Legal Content Container with Smooth Scrolling -->
+      <div style="font-size: 0.8125rem; color: var(--text-body); line-height: 1.7; overflow-y: auto; padding-right: 0.75rem; flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
         
-        <div>
-          <strong style="color: inherit; font-size: 0.875rem; display: block; margin-bottom: 0.25rem;">1. Правовая природа материалов и оценочных суждений (ст. 29 Конституции РФ, ст. 152 ГК РФ)</strong>
-          Все текстовые материалы, цифровые рейтинговые баллы (по 100-балльной шкале PLANKA GUIDE), обзоры, списки рекомендаций и рецензии, размещенные на интернет-ресурсе <strong>planka-guide.ru</strong>, представляют собой исключительно <strong>субъективные оценочные суждения, мнения и убеждения авторов</strong> (инспекторов), основанные на их личном потребительском восприятии и тайном клиентском опыте. В соответствии со <strong>ст. 29 Конституции РФ</strong> каждому гарантируется свобода мысли и слова, а также право свободно искать, получать, передавать и распространять информацию любым законным способом. Согласно разъяснениям <strong>Постановления Пленума Верховного Суда РФ № 3 от 24.02.2005 г.</strong>, оценочные суждения, мнения и убеждения не являются утверждениями о фактах и не могут быть предметом судебного опровержения в порядке ст. 152 ГК РФ.
+        <!-- ========================================================================= -->
+        <!-- TAB 1: PRIVACY POLICY (152-FZ COMPREHENSIVE COMPLIANCE) -->
+        <!-- ========================================================================= -->
+        <div id="legalTabContent_privacy">
+          <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
+            <strong style="color: var(--gold-deep); font-size: 0.875rem;">ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ И ЗАЩИТЫ ДАННЫХ PLANKA GUIDE</strong><br>
+            <span style="font-size: 0.725rem; color: var(--text-muted);">Редакция: Сентябрь 2026 года | Стандарт Федерального закона № 152-ФЗ и Michelin Privacy Charter</span>
+          </div>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">1. Общие положения и назначение документа</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Настоящая Политика конфиденциальности определяет фундаментальный порядок сбора, систематизации, использования, хранения и защиты сведений, получаемых при использовании веб-сайта PLANKA GUIDE, PWA-приложения, локальных кэшей и сопутствующих цифровых сервисов (далее — «Сервис»). 
+            Оператор сервиса исходит из строгого уважения фундаментальных прав граждан на неприкосновенность частной жизни и реализует международный архитектурный принцип <strong>«Privacy by Design & Default»</strong> (конфиденциальность по умолчанию). Сбор персональных данных физических лиц минимизирован до абсолютного технического предела.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">2. Сведения об Операторе и контактных каналах</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Оператором обработки данных является проект независимого ресторанного рейтинга PLANKA GUIDE (руководитель исследовательской группы — Кочнев Р. М., главный инженер проектов, магистр урбанистики УрФУ).<br>
+            Официальный канал взаимодействия по вопросам защиты данных и персональной информации: <code>legal@plankaguide.ru</code>.<br>
+            Адрес для почтовых юридических отправлений: 620002, Россия, Свердловская область, г. Екатеринбург, ул. Мира, д. 19.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">3. Категории обрабатываемой информации, правовые основания и сроки хранения</h4>
+          
+          <div style="border: 1px solid var(--border-color); border-radius: 0.45rem; overflow: hidden; margin-bottom: 1rem;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.725rem; text-align: left;">
+              <thead style="background: var(--bg-subtle); border-bottom: 1px solid var(--border-color);">
+                <tr>
+                  <th style="padding: 0.65rem 0.85rem; width: 22%;">Категория данных</th>
+                  <th style="padding: 0.65rem 0.85rem; width: 30%;">Цель обработки</th>
+                  <th style="padding: 0.65rem 0.85rem; width: 26%;">Правовое основание (152-ФЗ)</th>
+                  <th style="padding: 0.65rem 0.85rem; width: 22%;">Срок хранения</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 0.65rem 0.85rem; font-weight: 700;">Технические сетевые логи (Usage Data)</td>
+                  <td style="padding: 0.65rem 0.85rem;">Анализ стабильности сетевой инфраструктуры, защита от DDoS-атак, системное кэширование карт.</td>
+                  <td style="padding: 0.65rem 0.85rem;">Законный интерес оператора (ст. 6 п. 1 пп. 7 152-ФЗ).</td>
+                  <td style="padding: 0.65rem 0.85rem;">12 месяцев (автоудаление).</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 0.65rem 0.85rem; font-weight: 700;">Геолокация сессии (Location Data)</td>
+                  <td style="padding: 0.65rem 0.85rem;">Отображение ближайших заведений на интерактивной карте по запросу гостя.</td>
+                  <td style="padding: 0.65rem 0.85rem;">Добровольное согласие в браузере (ст. 9 152-ФЗ).</td>
+                  <td style="padding: 0.65rem 0.85rem;">В течение сессии (на сервере не сохраняется).</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 0.65rem 0.85rem; font-weight: 700;">Заявки на аудит («Предложить заведение»)</td>
+                  <td style="padding: 0.65rem 0.85rem;">Формирование перспективного графика тайных инспекций по предложениям гостей.</td>
+                  <td style="padding: 0.65rem 0.85rem;">Инициативное волеизъявление заявителя (без сбора ФИО и телефонов).</td>
+                  <td style="padding: 0.65rem 0.85rem;">До 3 лет с момента внесения в базу.</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.65rem 0.85rem; font-weight: 700;">Учетные записи модераторов</td>
+                  <td style="padding: 0.65rem 0.85rem;">Авторизация сотрудников в защищенном контуре базы Supabase Auth.</td>
+                  <td style="padding: 0.65rem 0.85rem;">Исполнение трудовых/гражданских соглашений инспекции.</td>
+                  <td style="padding: 0.65rem 0.85rem;">На период полномочий инспектора.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">4. Принцип B2B и нулевой сбор персональных данных потребителей</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Сервис PLANKA GUIDE принципиально не запрашивает, не хранит и не передает третьим лицам паспортные данные, номера банковских карт, домашние адреса, личные номера телефонов или персональные профили гостей. Формы предложений ресторанов оперируют <strong>исключительно открытыми общедоступными коммерческими реквизитами предприятий общепита</strong> (наименование юрлица/бренда, фактический адрес зала, средний чек, публичные телефоны администратора).
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">5. Права субъектов данных и порядок их реализации</h4>
+          <p style="margin-bottom: 0.85rem;">
+            В соответствии со статьями 14–17 Федерального закона № 152-ФЗ каждый пользователь вправе направить запрос на:
+            (а) подтверждение факта обработки данных Оператором;
+            (б) ознакомление с обрабатываемыми данными;
+            (в) уточнение, блокирование или уничтожение неполных или недостоверных сведений;
+            (г) отзыв ранее предоставленного согласия на обработку данных геолокации или cookie.
+            Любое обращение рассматривается службой комплаенса в течение не более 10 рабочих дней с направлением ответа по адресу заявителя.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">6. Ограничение для несовершеннолетних (18+)</h4>
+          <p>
+            Материалы сервиса включают аналитические обзоры барных карт, алкогольных концепций и коктейльных карт ресторанов. Сервис предназначен строго для лиц, достигших совершеннолетия (18 лет). Сбор информации о несовершеннолетних лицах не осуществляется.
+          </p>
         </div>
 
-        <div>
-          <strong style="color: inherit; font-size: 0.875rem; display: block; margin-bottom: 0.25rem;">2. Право потребителя на информацию и оценку качества (Закон РФ «О защите прав потребителей»)</strong>
-          Деятельность проекта осуществляется в рамках реализации прав потребителей на получение объективной информации об услугах общественного питания и обмен потребительским опытом (ст. 8, 10, 12 Закона РФ «О защите прав потребителей»). Материалы гида не являются официальным заключением органов Роспотребнадзора, судебной экспертизой или государственным стандартом.
+        <!-- ========================================================================= -->
+        <!-- TAB 2: TERMS OF USE & DISCLAIMER -->
+        <!-- ========================================================================= -->
+        <div id="legalTabContent_terms" class="hidden">
+          <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
+            <strong style="color: var(--gold-deep); font-size: 0.875rem;">ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ И ПРАВОВОЕ УВЕДОМЛЕНИЕ (TERMS OF USE)</strong><br>
+            <span style="font-size: 0.725rem; color: var(--text-muted);">Публичный регламент использования экспертных материалов гида</span>
+          </div>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">1. Предмет соглашения</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Настоящее Соглашение регламентирует условия пользования информационными материалами, аналитическими таблицами, радарными диаграммами и рейтинговыми реестрами PLANKA GUIDE. Доступ к сайту является добровольным и бесплатным для неограниченного круга пользователей.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">2. Некоммерческий экспертный статус (Zero Pay-to-Play)</h4>
+          <p style="margin-bottom: 0.85rem;">
+            PLANKA GUIDE является полностью независимым экспертным проектом. Включение предприятия питания в реестр, присвоение числовых баллов, выдача дипломов и предоставление статуса «Знак Качества» (≥ 90 б.) <strong>не являются коммерческими услугами, не могут быть куплены, проданы, пролоббированы либо удалены за вознаграждение</strong>.
+            Любые предложения об оплате визита инспектора, платной рекламе или покупке баллов квалифицируются как грубое нарушение профессиональной этики с бессрочным исключением локации из рассмотрения.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">3. Отказ от гарантий и ограничение ответственности (Disclaimer)</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Все материалы гида носят исключительно справочный, культурно-исследовательский и аналитический характер.
+            (а) <em>Отсутствие статуса госоргана</em>: Гид не заменяет собой санитарно-эпидемиологические проверки органов Роспотребнадзора, государственную классификацию или судебную экспертизу.<br>
+            (б) <em>Динамика гастрономического рынка</em>: Редакция фиксирует параметры сервиса, чистоты и качества блюд на момент проведения тайной инспекции. Проект не гарантирует абсолютной неизменности рецептур, стабильности состава поварской бригады, сохранения указанных в обзоре цен меню или режима работы заведения.<br>
+            (в) <em>Исключение коммерческой ответственности</em>: Оператор гида не несет юридической или финансовой ответственности за потребительские разочарования гостей, изменение спроса, финансовые результаты деятельности заведений общепита либо решения третьих лиц, принятые на основе опубликованных оценок.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">4. Ссылки на внешние ресурсы и бронирование</h4>
+          <p>
+            Сервис предоставляет прямые ссылки на телефонные номера заведений, их официальные сайты и системы онлайн-бронирования. Переход по ссылкам осуществляется пользователем на собственный риск; порядок бронирования и правила отмены регламентируются внутренними политиками конкретного заведения.
+          </p>
         </div>
 
-        <div>
-          <strong style="color: inherit; font-size: 0.875rem; display: block; margin-bottom: 0.25rem;">3. Законность фиксации и охрана изображений (ст. 7 ФЗ № 149-ФЗ, ст. 152.1 ГК РФ)</strong>
-          Фото- и видеофиксация блюд, чеков, сервировки и интерьеров проводится в местах, открытых для свободного посещения (залы ресторанов, кофеен, баров). В соответствии со <strong>ст. 152.1 ГК РФ</strong> согласие граждан на съемку не требуется, поскольку съемка проводится в общедоступных местах и изображение случайных посетителей не является основным объектом использования. Лица третьих лиц при необходимости защищаются от идентификации.
+        <!-- ========================================================================= -->
+        <!-- TAB 3: SUBJECTIVE VALUE JUDGMENTS (RU CIVIL CODE ART. 152 & CONST. ART. 29) -->
+        <!-- ========================================================================= -->
+        <div id="legalTabContent_opinions" class="hidden">
+          <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
+            <strong style="color: var(--gold-deep); font-size: 0.875rem;">ПРАВОВОЙ СТАТУС ОЦЕНОЧНЫХ СУЖДЕНИЙ И ЗАЩИТА ДЕЛОВОЙ РЕПУТАЦИИ</strong><br>
+            <span style="font-size: 0.725rem; color: var(--text-muted);">Применение статьи 29 Конституции РФ, статьи 152 ГК РФ и Постановления Пленума ВС РФ № 3</span>
+          </div>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">1. Конституционная свобода слова, мысли и профессиональной критики</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Деятельность независимых экспертов-инспекторов опирается на фундаментальные гарантии <strong>статьи 29 Конституции Российской Федерации</strong>, гарантирующей каждому гражданину свободу мысли, слова, право свободно искать, получать, передавать и распространять информацию любым законным способом. В соответствии со <strong>статьей 44 Конституции РФ</strong> гарантируется свобода литературного, научного, технического и других видов творчества, преподавания и экспертной оценки.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">2. Доктрина субъективного оценочного суждения (Постановление Пленума ВС РФ № 3)</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Правовая позиция высшей судебной инстанции РФ, закрепленная в <strong>пункте 9 Постановления Пленума Верховного Суда РФ от 24.02.2005 г. № 3</strong> «О судебной практике по делам о защите чести и достоинства граждан, а также деловой репутации граждан и юридических лиц», однозначно разграничивает утверждения о фактах и авторские оценки:
+          </p>
+          <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 0.4rem; padding: 0.85rem 1.15rem; font-style: italic; margin-bottom: 0.85rem; color: var(--text-main);">
+            «Судам необходимо иметь в виду, что в соответствии со статьей 10 Конвенции о защите прав человека и основных свобод и статьей 29 Конституции РФ позиции участников спора о защите деловой репутации подлежат оценке с учетом того, что оценочные суждения, мнения, убеждения, критические отзывы не являются утверждениями о фактах, не могут быть проверены на предмет соответствия их действительности и <strong>не могут являться предметом судебной защиты в порядке статьи 152 Гражданского кодекса Российской Федерации</strong>».
+          </div>
+          <p style="margin-bottom: 0.85rem;">
+            Итоговые баллы по 100-балльной шкале PLANKA GUIDE, баллы по 6 столпам (сырье, мастерство, цена, сервис, урбанистика, санитария), текстовые рецензии и выводы инспекторов <strong>не являются утверждениями о нарушениях законодательства хозяйствующим субъектом</strong>. Они выражают субъективное эмоциональное, эстетическое, вкусовое и профессиональное восприятие конкретного потребителя (инспектора), находящегося в зале предприятия общепита в качестве тайного гостя.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">3. Законность фиксации в залах заведений (ст. 152.1 ГК РФ, ст. 7 149-ФЗ)</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Залы предприятий общественного питания являются местами, открытыми для свободного и публичного доступа граждан. Фотосъемка и видеофиксация блюд, сервировки, интерьера, чеков и открытых технологических зон проводятся на основании ст. 7 Федерального закона № 149-ФЗ «Об информации» (общедоступная информация). В соответствии со <strong>статьей 152.1 ГК РФ</strong> согласие третьих лиц на съемку не требуется, так как она проводится в публичных местах, а случайные посетители не выступают центральным объектом кадра.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">4. Содействие правам потребителей (Закон РФ № 2300-1)</h4>
+          <p>
+            Материалы гида направлены на практическую реализацию прав неограниченного круга граждан на получение достоверной потребительской информации о качестве сервиса, честности веса блюд и культуре гостеприимства (статьи 8, 10, 12 Закона РФ от 07.02.1992 № 2300-1 «О защите прав потребителей»).
+          </p>
         </div>
 
-        <div>
-          <strong style="color: inherit; font-size: 0.875rem; display: block; margin-bottom: 0.25rem;">4. Принцип полного отказа от сбора персональных данных (152-ФЗ)</strong>
-          Интернет-ресурс PLANKA GUIDE <strong>не осуществляет сбор, обработку, систематизацию или хранение персональных данных</strong> физических лиц (посетителей сайта). Формы предложений заведений собирают исключительно открытые сведения о предприятиях торговли и общепита.
+        <!-- ========================================================================= -->
+        <!-- TAB 4: EDITORIAL INDEPENDENCE & MICHELIN-LEVEL INSPECTION CHARTER -->
+        <!-- ========================================================================= -->
+        <div id="legalTabContent_charter" class="hidden">
+          <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
+            <strong style="color: var(--gold-deep); font-size: 0.875rem;">ХАРТИЯ НЕЗАВИСИМОСТИ И СТАНДАРТ ИНСПЕКЦИЙ (THE MICHELIN ETHICS STANDARD)</strong><br>
+            <span style="font-size: 0.725rem; color: var(--text-muted);">6 фундаментальных принципов неподкупности тайного аудита</span>
+          </div>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">Шесть столпов неподкупности тайного инспектора</h4>
+          <p style="margin-bottom: 0.85rem;">
+            PLANKA GUIDE адаптирует столетнюю практику международного гида Michelin к специфике современного российского ресторанного рынка:
+          </p>
+
+          <ol style="padding-left: 1.25rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.65rem;">
+            <li><strong>Анонимность инспектора (Strict Anonymity)</strong>: Инспекторы действуют строго инкогнито под видом рядовых посетителей. Они не представляются менеджменту, не анонсируют визиты, не требуют встречи с шеф-поваром и не привлекают внимания в зале.</li>
+            <li><strong>Полная самостоятельная оплата счетов (100% Paid Bills)</strong>: Инспекторы всегда полностью оплачивают счета личными средствами. Принятие бесплатных угощений, комплиментов от управляющего, скидочных карт или спонсорских приглашений расценивается как грубейший конфликт интересов и влечет немедленное аннулирование аудита.</li>
+            <li><strong>Научно-обоснованные физические замеры (Measurement & Evidence)</strong>: Оценка не сводится к абстрактным вкусовым впечатлениям. Инспекторы замеряют хронометраж отдачи блюд по секундомеру, фиксируют эргономику столов, освещенность, уровень фонового шума в децибелах, чистоту санитарных зон и соответствие позиций в чеке заявленному меню.</li>
+            <li><strong>Коллегиальность и повторяемость (Reliability & Consistency)</strong>: Присвоение статуса «Знак Качества» (90+ баллов) не может являться решением одного человека. Решение принимается коллегией модераторов на основе нескольких независимых визитов в разное время дня.</li>
+            <li><strong>Презумпция качества и отказ от антирейтингов (Zero Anti-Ratings Policy)</strong>: Ресурс принципиально не публикует «черные списки» или негативные антирейтинги. Заведения, набравшие менее 75 баллов, автоматически исключаются из открытого каталога и помещаются в закрытый служебный архив. Отсутствие заведения в гиде юридически означает лишь то, что оно находится на этапе текущего мониторинга либо вне рамок текущего сезона.</li>
+            <li><strong>Отраслевая дифференциация форматов (Category Fairness)</strong>: Каждая из 6 категорий общепита (Рестораны & Fine Dining, Спешелти-кофейни, Коктейльные бары, Пекарни, Столовые & Fast Casual, Доставка) оценивается по своему специализированному калькулятору критериев.</li>
+          </ol>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">Порядок повторного контрольного визита (Re-Audit Protocol)</h4>
+          <p>
+            В случае смены концепции, обновления меню или прихода нового бренд-шефа заведение вправе направить открытую заявку в комиссию гида. Повторный контрольный аудит проводится в порядке общей очереди в режиме полной секретности.
+          </p>
         </div>
 
-        <div>
-          <strong style="color: inherit; font-size: 0.875rem; display: block; margin-bottom: 0.25rem;">5. Порядок взаимодействия и повторного аудита</strong>
-          Менеджмент и шеф-повара заведений, в которых произошли обновления меню, смена команды или концепции, вправе направить открытую заявку на проведение повторного тайного аудита.
+        <!-- ========================================================================= -->
+        <!-- TAB 5: COOKIES & LOCAL STORAGE POLICY -->
+        <!-- ========================================================================= -->
+        <div id="legalTabContent_cookies" class="hidden">
+          <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
+            <strong style="color: var(--gold-deep); font-size: 0.875rem;">ПОЛИТИКА COOKIES И ЛОКАЛЬНОГО ХРАНИЛИЩА (COOKIE & STORAGE POLICY)</strong><br>
+            <span style="font-size: 0.725rem; color: var(--text-muted);">Технический регламент использования кэша PWA, LocalStorage и cookie-файлов</span>
+          </div>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">1. Назначение и правовая природа используемых файлов</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Файлы cookie и веб-хранилище (LocalStorage, SessionStorage, Cache API Service Worker) представляют собой небольшие фрагменты данных, сохраняемые на оконечном устройстве пользователя (компьютере или смартфоне). Они используются исключительно для обеспечения технической работоспособности интерфейса, стабильности PWA в офлайн-режиме и сохранения пользовательских настроек.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">2. Структура и назначение локальных ключей</h4>
+          
+          <ul style="padding-left: 1.25rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <li><code>planka_guide_theme</code> — Сохранение выбранной цветовой темы (светлая/тёмная) для снижения зрительной нагрузки.</li>
+            <li><code>planka_favorites</code> — Локальный список закладок («Избранное»), выбранных гостем. На внешние серверы не передается.</li>
+            <li><code>planka_compare</code> — Модуль сопоставления ресторанов (до 3 позиций для сравнения характеристик).</li>
+            <li><code>planka_active_form_draft</code> — Непрерывный автосейв черновика аудита инспектора, предотвращающий потерю замеров при случайном обновлении вкладки.</li>
+            <li><code>planka-guide-v81-cache</code> — Системный офлайн-кэш Service Worker, обеспечивающий работу карты и каталога даже при отсутствии сотовой связи.</li>
+          </ul>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">3. Отказ от коммерческих и поведенческих трекеров</h4>
+          <p>
+            Сервис категорически отказывается от внедрения коммерческих трекеров рекламных сетей, систем перекрестного отслеживания (cross-site tracking) и брокеров пользовательских данных. Данные о поведении пользователей не монетизируются и не передаются третьим лицам.
+          </p>
         </div>
 
-        <button onclick="closeLegalModal()" type="button" class="btn btn-dark" style="width: 100%; padding: 0.85rem; margin-top: 0.5rem;">Я ознакомлен и принимаю регламент</button>
+        <!-- ========================================================================= -->
+        <!-- TAB 6: TRADEMARK & QUALITY MARK REGULATIONS -->
+        <!-- ========================================================================= -->
+        <div id="legalTabContent_trademark" class="hidden">
+          <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
+            <strong style="color: var(--gold-deep); font-size: 0.875rem;">РЕГЛАМЕНТ ИСПОЛЬЗОВАНИЯ СИМВОЛИКИ И «ЗНАКА КАЧЕСТВА»</strong><br>
+            <span style="font-size: 0.725rem; color: var(--text-muted);">Интеллектуальная собственность, маркировка залов и условия дипломирования</span>
+          </div>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">1. Права интеллектуальной собственности</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Наименование PLANKA GUIDE, знак отличия «Знак Качества», визуальные эмблемы рейтинга, радарные радиальные диаграммы, тексты экспертных досье и цифровые макеты сертификатов формата А4 являются объектами исключительных авторских прав создателя проекта.
+          </p>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">2. Права ресторанов, отмеченных Знаком Качества (≥ 90 баллов)</h4>
+          <p style="margin-bottom: 0.85rem;">
+            Предприятия общественного питания, официально включенные в открытый реестр гида с подтвержденным баллом 90 и более из 100, получают право:
+          </p>
+          <ul style="padding-left: 1.25rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.45rem;">
+            <li>Бесплатно размещать официальную наклейку «Знак Качества PLANKA GUIDE» на входной группе, дверях и окнах зала.</li>
+            <li>Экспонировать в гостевом зале именной номерной диплом формата А4 с указанием итогового балла, даты аудита и QR-кода верификации.</li>
+            <li>Использовать в своих рекламных и PR-материалах формулировку: <em>«Отмечено Знаком Качества независимого гида PLANKA GUIDE (Балл XX/100, 2026 г.)»</em>.</li>
+          </ul>
+
+          <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">3. Запрет недобросовестного использования и санкции</h4>
+          <p>
+            Самовольное использование знаков отличия заведениями, не прошедшими тайный аудит, округление баллов в большую сторону либо удаление даты проверки запрещены. В случае выявления грубых нарушений санитарных норм или подделки диплома статус заведения в открытом реестре немедленно аннулируется с публичным уведомлением в реестре.
+          </p>
+        </div>
+
       </div>
+
+      <!-- Modal Footer Action -->
+      <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+        <span style="font-size: 0.6875rem; color: var(--text-muted);">Документы действуют бессрочно с момента официальной публикации. Редакция 2026.</span>
+        <button onclick="closeLegalModal()" type="button" class="btn btn-dark" style="padding: 0.65rem 1.35rem; font-weight: 800; font-size: 0.75rem;">Я ознакомлен и принимаю регламент</button>
+      </div>
+
     </div>
   </div>
 <!-- MODAL: SECURE INSPECTOR AUTH -->
@@ -3089,7 +3326,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v80') || 
+      var stored = localStorage.getItem('planka_guide_db_v81') || 
                    localStorage.getItem('planka_guide_db_v78') || 
                    localStorage.getItem('planka_guide_db_v77') || 
                    localStorage.getItem('planka_guide_db_v76') || 
@@ -3225,7 +3462,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v80', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v81', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -5166,11 +5403,43 @@
       }
     }
 
-    function openLegalModal() {
+    function openLegalModal(initialTab) {
+      if (initialTab) {
+        switchLegalTab(initialTab);
+      } else {
+        switchLegalTab('privacy');
+      }
       openModal('legalModal');
     }
+
     function closeLegalModal() {
       closeModal('legalModal');
+    }
+
+    function switchLegalTab(tabId) {
+      var tabs = ['privacy', 'terms', 'opinions', 'charter', 'cookies', 'trademark'];
+      for (var i = 0; i < tabs.length; i++) {
+        var tId = tabs[i];
+        var contentEl = document.getElementById('legalTabContent_' + tId);
+        var btnEl = document.getElementById('legalTabBtn_' + tId);
+        if (contentEl) {
+          if (tId === tabId) contentEl.classList.remove('hidden');
+          else contentEl.classList.add('hidden');
+        }
+        if (btnEl) {
+          if (tId === tabId) {
+            btnEl.classList.add('active');
+            btnEl.style.background = 'var(--text-main)';
+            btnEl.style.color = 'var(--bg-surface)';
+            btnEl.style.borderColor = 'var(--text-main)';
+          } else {
+            btnEl.classList.remove('active');
+            btnEl.style.background = 'var(--bg-subtle)';
+            btnEl.style.color = 'var(--text-muted)';
+            btnEl.style.borderColor = 'var(--border-subtle)';
+          }
+        }
+      }
     }
 
     function acceptCookieConsent() {
@@ -11631,7 +11900,7 @@
           // Deduplicate remote venues and local drafts by name and ID
           var combined = remoteVenues.concat(draftList);
           venues = deduplicateVenues(combined);
-          safeSetItem('planka_guide_db_v80', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v81', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
