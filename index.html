@@ -6365,6 +6365,28 @@
       closeModal('auditEditorModal');
     }
 
+    
+    // TRANSLITERATED STORAGE SLUG GENERATOR: Creates clean organized subfolders per venue
+    function getVenueStorageSlug(name, address) {
+      var ru = {
+        'а':'a', 'б':'b', 'в':'v', 'г':'g', 'д':'d', 'е':'e', 'ё':'yo', 'ж':'zh',
+        'з':'z', 'и':'i', 'й':'y', 'к':'k', 'л':'l', 'м':'m', 'н':'n', 'о':'o',
+        'п':'p', 'р':'r', 'с':'s', 'т':'t', 'у':'u', 'ф':'f', 'х':'kh', 'ц':'ts',
+        'ч':'ch', 'ш':'sh', 'щ':'shch', 'ъ':'', 'ы':'y', 'ь':'', 'э':'e', 'ю':'yu', 'я':'ya'
+      };
+      var raw = ((name || 'Venue') + ((address && address.trim()) ? (' - ' + address) : '')).toLowerCase();
+      var translit = '';
+      for (var i = 0; i < raw.length; i++) {
+        var c = raw[i];
+        translit += (ru[c] !== undefined) ? ru[c] : c;
+      }
+      return translit
+        .replace(/[\/\\:*?"<>|#%]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/_+/g, '_')
+        .substring(0, 75);
+    }
+
     async function submitAuditForm(targetStatus) {
       var nameVal = document.getElementById('formName').value.trim();
       var cityVal = document.getElementById('formCity').value.trim();
@@ -6447,7 +6469,7 @@
         ergonomics_notes: ergoNotesText || "",
         video: currentEditingVideo,
         photos: currentEditingPhotos,
-        private_photos: uploadedPrivatePhotos,
+        private_photos: currentEditingPrivatePhotos,
         pros: prosList,
         cons: consList,
         vibe_tags: vibeList,
@@ -6471,7 +6493,7 @@
         return;
       }
 
-      // 2. Cloud Submission to Supabase
+      // 2. Cloud Submission to Supabase (3 Dedicated Folders & Subfolder per Venue)
       var isEditing = !!editId;
       var finalDbStatus = 'archived';
 
@@ -6481,9 +6503,13 @@
       } else {
         finalDbStatus = 'archived';
       }
-      var uploadedPhotos = currentEditingPhotos.slice();
 
-      // 1. Upload Public Photos to Supabase Storage ('planka-media')
+      var venueSlug = getVenueStorageSlug(nameVal, addrText);
+      var uploadedPhotos = currentEditingPhotos.slice();
+      var uploadedPrivatePhotos = currentEditingPrivatePhotos.slice();
+      var uploadedVideoUrl = currentEditingVideo;
+
+      // 1. PUBLIC PHOTOS -> planka-media/photos/{venueSlug}/
       if (supabaseClient && Array.isArray(currentEditingPhotos)) {
         for (var pIdx = 0; pIdx < currentEditingPhotos.length; pIdx++) {
           var pData = currentEditingPhotos[pIdx];
@@ -6496,60 +6522,92 @@
                 var byteChars = atob(rawB64);
                 var byteNums = new Array(byteChars.length);
                 for (var b = 0; b < byteChars.length; b++) { byteNums[b] = byteChars.charCodeAt(b); }
-                var byteArray = new Uint8Array(byteNums);
-                var blob = new Blob([byteArray], { type: 'image/' + ext });
-                var fileName = 'audit_' + Date.now() + '_' + pIdx + '.' + ext;
+                var blob = new Blob([new Uint8Array(byteNums)], { type: 'image/' + ext });
+                var filePath = 'photos/' + venueSlug + '/photo_' + (pIdx + 1) + '_' + Date.now() + '.' + ext;
 
-                var uploadRes = await supabaseClient.storage.from('planka-media').upload(fileName, blob, { contentType: 'image/' + ext });
-                if (!uploadRes.error && uploadRes.data) {
-                  var publicUrlRes = supabaseClient.storage.from('planka-media').getPublicUrl(fileName);
-                  if (publicUrlRes && publicUrlRes.data && publicUrlRes.data.publicUrl) {
-                    uploadedPhotos[pIdx] = publicUrlRes.data.publicUrl;
+                var upRes = await supabaseClient.storage.from('planka-media').upload(filePath, blob, { contentType: 'image/' + ext, upsert: true });
+                if (!upRes.error && upRes.data) {
+                  var pubRes = supabaseClient.storage.from('planka-media').getPublicUrl(filePath);
+                  if (pubRes && pubRes.data && pubRes.data.publicUrl) {
+                    uploadedPhotos[pIdx] = pubRes.data.publicUrl;
                   }
+                } else if (upRes.error) {
+                  console.warn('Public photo upload warning:', upRes.error.message);
                 }
               }
-            } catch(upErr) {
-              console.warn('Storage upload error for public photo ' + pIdx + ':', upErr);
+            } catch(e) {
+              console.warn('Public photo upload error:', e);
             }
           }
         }
       }
 
-      // 2. Upload Private Inspector Photos to Isolated 'private/' Folder in Storage
-      var uploadedPrivatePhotos = [];
+      // 2. SECRET / PRIVATE PHOTOS -> planka-private/secret_photos/{venueSlug}/ (fallback: planka-media/private/{venueSlug}/)
       if (supabaseClient && Array.isArray(currentEditingPrivatePhotos)) {
-        for (var priIdx = 0; priIdx < currentEditingPrivatePhotos.length; priIdx++) {
-          var priData = currentEditingPrivatePhotos[priIdx];
-          if (priData && priData.indexOf('data:image') === 0) {
+        for (var sIdx = 0; sIdx < currentEditingPrivatePhotos.length; sIdx++) {
+          var sData = currentEditingPrivatePhotos[sIdx];
+          if (sData && sData.indexOf('data:image') === 0) {
             try {
-              var priMatch = priData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
-              if (priMatch) {
-                var priExt = priMatch[1] === 'jpeg' ? 'jpg' : priMatch[1];
-                var priRawB64 = priMatch[2];
-                var priByteChars = atob(priRawB64);
-                var priByteNums = new Array(priByteChars.length);
-                for (var pb = 0; pb < priByteChars.length; pb++) { priByteNums[pb] = priByteChars.charCodeAt(pb); }
-                var priByteArray = new Uint8Array(priByteNums);
-                var priBlob = new Blob([priByteArray], { type: 'image/' + priExt });
-                // Dedicated isolated private folder
-                var priFileName = 'private/audit_private_' + Date.now() + '_' + priIdx + '.' + priExt;
+              var matchS = sData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+              if (matchS) {
+                var extS = matchS[1] === 'jpeg' ? 'jpg' : matchS[1];
+                var rawB64S = matchS[2];
+                var byteCharsS = atob(rawB64S);
+                var byteNumsS = new Array(byteCharsS.length);
+                for (var bs = 0; bs < byteCharsS.length; bs++) { byteNumsS[bs] = byteCharsS.charCodeAt(bs); }
+                var blobS = new Blob([new Uint8Array(byteNumsS)], { type: 'image/' + extS });
 
-                var priUploadRes = await supabaseClient.storage.from('planka-media').upload(priFileName, priBlob, { contentType: 'image/' + priExt });
-                if (!priUploadRes.error && priUploadRes.data) {
-                  var priPublicUrlRes = supabaseClient.storage.from('planka-media').getPublicUrl(priFileName);
-                  if (priPublicUrlRes && priPublicUrlRes.data && priPublicUrlRes.data.publicUrl) {
-                    uploadedPrivatePhotos.push(priPublicUrlRes.data.publicUrl);
+                // Try dedicated private bucket first
+                var privateFilePath = 'secret_photos/' + venueSlug + '/secret_' + (sIdx + 1) + '_' + Date.now() + '.' + extS;
+                var privUpRes = await supabaseClient.storage.from('planka-private').upload(privateFilePath, blobS, { contentType: 'image/' + extS, upsert: true });
+
+                if (!privUpRes.error && privUpRes.data) {
+                  var privPubRes = supabaseClient.storage.from('planka-private').getPublicUrl(privateFilePath);
+                  if (privPubRes && privPubRes.data && privPubRes.data.publicUrl) {
+                    uploadedPrivatePhotos[sIdx] = privPubRes.data.publicUrl;
                   }
-                } else if (priUploadRes.error) {
-                  console.warn('Private storage upload notice:', priUploadRes.error);
+                } else {
+                  // Fallback to planka-media/private/{venueSlug}/
+                  var altPath = 'private/' + venueSlug + '/secret_' + (sIdx + 1) + '_' + Date.now() + '.' + extS;
+                  var altUp = await supabaseClient.storage.from('planka-media').upload(altPath, blobS, { contentType: 'image/' + extS, upsert: true });
+                  if (!altUp.error && altUp.data) {
+                    var altPub = supabaseClient.storage.from('planka-media').getPublicUrl(altPath);
+                    if (altPub && altPub.data && altPub.data.publicUrl) {
+                      uploadedPrivatePhotos[sIdx] = altPub.data.publicUrl;
+                    }
+                  }
                 }
               }
-            } catch(priUpErr) {
-              console.warn('Private storage upload exception:', priUpErr);
+            } catch(e) {
+              console.warn('Private photo upload error:', e);
             }
-          } else if (priData && typeof priData === 'string' && priData.indexOf('http') === 0) {
-            uploadedPrivatePhotos.push(priData);
           }
+        }
+      }
+
+      // 3. VIDEO -> planka-media/videos/{venueSlug}/
+      if (supabaseClient && currentEditingVideo && currentEditingVideo.indexOf('data:video') === 0) {
+        try {
+          var vMatch = currentEditingVideo.match(/^data:video\/([a-zA-Z0-9]+);base64,(.+)$/);
+          if (vMatch) {
+            var vExt = vMatch[1];
+            var vRaw = vMatch[2];
+            var vBytes = atob(vRaw);
+            var vNums = new Array(vBytes.length);
+            for (var vi = 0; vi < vBytes.length; vi++) { vNums[vi] = vBytes.charCodeAt(vi); }
+            var vBlob = new Blob([new Uint8Array(vNums)], { type: 'video/' + vExt });
+            var vPath = 'videos/' + venueSlug + '/video_' + Date.now() + '.' + vExt;
+
+            var vUpRes = await supabaseClient.storage.from('planka-media').upload(vPath, vBlob, { contentType: 'video/' + vExt, upsert: true });
+            if (!vUpRes.error && vUpRes.data) {
+              var vPubRes = supabaseClient.storage.from('planka-media').getPublicUrl(vPath);
+              if (vPubRes && vPubRes.data && vPubRes.data.publicUrl) {
+                uploadedVideoUrl = vPubRes.data.publicUrl;
+              }
+            }
+          }
+        } catch(e) {
+          console.warn('Video upload error:', e);
         }
       }
 
@@ -6562,6 +6620,8 @@
         total_score: total,
         status: finalDbStatus,
         media_urls: uploadedPhotos,
+        private_media_urls: uploadedPrivatePhotos,
+        private_notes: privNotes || "",
         review: fullRevText || ("Контрольный аудит: " + nameVal + ". Итог: " + total + " б."),
         details: {
           name: nameVal,
@@ -6588,7 +6648,7 @@
           private_notes: privNotes || "",
           urban_notes: urbanNotesText || "",
           ergonomics_notes: ergoNotesText || "",
-          video: currentEditingVideo,
+          video: uploadedVideoUrl,
           photos: uploadedPhotos,
           private_photos: uploadedPrivatePhotos,
           pros: prosList,
@@ -12167,24 +12227,6 @@
     }
 
     // ASYNC CLOUD DATABASE SYNC FROM SUPABASE (STRICT 75+ & APPROVED ONLY)
-    
-    // INSTANT CLOUD SYNC ON TAB FOCUS / VISIBILITY RESTORATION
-    window.addEventListener('focus', function() {
-      if (supabaseClient) {
-        console.log('Tab focused -> syncing latest updates from Supabase...');
-        syncFromSupabase();
-        if (isAdmin && isModerator) renderModeratorQueue();
-      }
-    });
-
-    document.addEventListener('visibilitychange', function() {
-      if (!document.hidden && supabaseClient) {
-        console.log('Page visible -> syncing latest updates from Supabase...');
-        syncFromSupabase();
-        if (isAdmin && isModerator) renderModeratorQueue();
-      }
-    });
-
     async function syncFromSupabase() {
       if (!supabaseClient) return;
       try {
@@ -12192,7 +12234,8 @@
         var res = await supabaseClient
           .from('venues')
           .select('*')
-          .or('status.ilike.approved,status.ilike.published')
+          .or('status.eq.approved,status.eq.published')
+          .gte('total_score', 75)
           .order('total_score', { ascending: false });
 
         if (!res.error && Array.isArray(res.data) && res.data.length > 0) {
@@ -12206,8 +12249,7 @@
             v.address = item.address || v.address || 'Адрес не указан';
             v.scores = item.scores || v.scores || { food: 30, wow: 14, price: 14, service: 14, space: 9, sanitation: 9 };
             v.total_score = Number(item.total_score) || Number(v.total_score) || 80;
-            // Case-insensitive status normalization
-            v.status = (item.status || v.status || 'approved').toLowerCase().trim();
+            v.status = item.status || 'approved';
             
             // Numerical safety for average check
             var rawCheck = (v.avg_check !== undefined && v.avg_check !== null) ? v.avg_check : 2000;
@@ -12218,7 +12260,8 @@
             v.value_score = (v.value_score !== undefined && v.value_score !== null) ? Number(v.value_score) : 8.5;
             
             v.photos = (item.media_urls && Array.isArray(item.media_urls) && item.media_urls.length > 0) ? item.media_urls : (v.photos || []);
-            v.private_photos = (item.details && Array.isArray(item.details.private_photos) && item.details.private_photos.length > 0) ? item.details.private_photos : (v.private_photos || []);
+            v.private_photos = (item.private_media_urls && Array.isArray(item.private_media_urls) && item.private_media_urls.length > 0) ? item.private_media_urls : (v.private_photos || []);
+            v.private_notes = item.private_notes || v.private_notes || '';
             v.signature_dish = v.signature_dish || 'Фирменное блюдо';
             v.dish_review = v.dish_review || '';
             v.full_review = item.review || v.full_review || '';
