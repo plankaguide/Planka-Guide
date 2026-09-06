@@ -1,4 +1,4 @@
-const CACHE_NAME = 'planka-guide-v85-cache';
+const CACHE_NAME = 'planka-guide-v86-cache';
 
 const STATIC_ASSETS = [
   './',
