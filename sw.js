@@ -1,9 +1,8 @@
-const CACHE_NAME = 'planka-guide-v84-cache';
+const CACHE_NAME = 'planka-guide-v85-cache';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './style.css',
   './venues.json',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,700&display=swap',
