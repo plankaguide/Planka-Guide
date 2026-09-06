@@ -2251,16 +2251,6 @@
         <button onclick="closeLegalModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2.25rem; height: 2.25rem; border-radius: 9999px; cursor: pointer; font-weight: 900;" title="Закрыть">✕</button>
       </div>
 
-      <!-- Legal Navigation Tabs (Corporate Tabbed Architecture) -->
-      <div style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); -webkit-overflow-scrolling: touch;">
-        <button type="button" id="legalTabBtn_privacy" onclick="switchLegalTab('privacy')" class="btn btn-dark" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">📜 Политика конфиденциальности (152-ФЗ)</button>
-        <button type="button" id="legalTabBtn_terms" onclick="switchLegalTab('terms')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">⚖️ Пользовательское соглашение</button>
-        <button type="button" id="legalTabBtn_opinions" onclick="switchLegalTab('opinions')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">🏛 Оценочные суждения (ст. 152 ГК РФ)</button>
-        <button type="button" id="legalTabBtn_charter" onclick="switchLegalTab('charter')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">🕵️ Манифест независимости (Стандарт Michelin)</button>
-        <button type="button" id="legalTabBtn_cookies" onclick="switchLegalTab('cookies')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">🍪 Cookies и локальный кэш</button>
-        <button type="button" id="legalTabBtn_trademark" onclick="switchLegalTab('trademark')" class="btn btn-light" style="font-size: 0.725rem; padding: 0.45rem 0.85rem; white-space: nowrap; font-weight: 700;">🎖 Знак Качества и диплом</button>
-      </div>
-
       <!-- Legal Content Container with Smooth Scrolling -->
       <div style="font-size: 0.8125rem; color: var(--text-body); line-height: 1.7; overflow-y: auto; padding-right: 0.75rem; flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
         
@@ -2351,7 +2341,8 @@
         <!-- ========================================================================= -->
         <!-- TAB 2: TERMS OF USE & DISCLAIMER -->
         <!-- ========================================================================= -->
-        <div id="legalTabContent_terms" class="hidden">
+        <div style="height: 1px; background: var(--border-color); margin: 2.25rem 0;"></div>
+        <div id="legalTabContent_terms">
           <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
             <strong style="color: var(--gold-deep); font-size: 0.875rem;">ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ И ПРАВОВОЕ УВЕДОМЛЕНИЕ (TERMS OF USE)</strong><br>
             <span style="font-size: 0.725rem; color: var(--text-muted);">Публичный регламент использования экспертных материалов гида</span>
@@ -2385,7 +2376,8 @@
         <!-- ========================================================================= -->
         <!-- TAB 3: SUBJECTIVE VALUE JUDGMENTS (RU CIVIL CODE ART. 152 & CONST. ART. 29) -->
         <!-- ========================================================================= -->
-        <div id="legalTabContent_opinions" class="hidden">
+        <div style="height: 1px; background: var(--border-color); margin: 2.25rem 0;"></div>
+        <div id="legalTabContent_opinions">
           <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
             <strong style="color: var(--gold-deep); font-size: 0.875rem;">ПРАВОВОЙ СТАТУС ОЦЕНОЧНЫХ СУЖДЕНИЙ И ЗАЩИТА ДЕЛОВОЙ РЕПУТАЦИИ</strong><br>
             <span style="font-size: 0.725rem; color: var(--text-muted);">Применение статьи 29 Конституции РФ, статьи 152 ГК РФ и Постановления Пленума ВС РФ № 3</span>
@@ -2421,7 +2413,8 @@
         <!-- ========================================================================= -->
         <!-- TAB 4: EDITORIAL INDEPENDENCE & MICHELIN-LEVEL INSPECTION CHARTER -->
         <!-- ========================================================================= -->
-        <div id="legalTabContent_charter" class="hidden">
+        <div style="height: 1px; background: var(--border-color); margin: 2.25rem 0;"></div>
+        <div id="legalTabContent_charter">
           <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
             <strong style="color: var(--gold-deep); font-size: 0.875rem;">ХАРТИЯ НЕЗАВИСИМОСТИ И СТАНДАРТ ИНСПЕКЦИЙ (THE MICHELIN ETHICS STANDARD)</strong><br>
             <span style="font-size: 0.725rem; color: var(--text-muted);">6 фундаментальных принципов неподкупности тайного аудита</span>
@@ -2450,7 +2443,8 @@
         <!-- ========================================================================= -->
         <!-- TAB 5: COOKIES & LOCAL STORAGE POLICY -->
         <!-- ========================================================================= -->
-        <div id="legalTabContent_cookies" class="hidden">
+        <div style="height: 1px; background: var(--border-color); margin: 2.25rem 0;"></div>
+        <div id="legalTabContent_cookies">
           <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
             <strong style="color: var(--gold-deep); font-size: 0.875rem;">ПОЛИТИКА COOKIES И ЛОКАЛЬНОГО ХРАНИЛИЩА (COOKIE & STORAGE POLICY)</strong><br>
             <span style="font-size: 0.725rem; color: var(--text-muted);">Технический регламент использования кэша PWA, LocalStorage и cookie-файлов</span>
@@ -2468,7 +2462,7 @@
             <li><code>planka_favorites</code> — Локальный список закладок («Избранное»), выбранных гостем. На внешние серверы не передается.</li>
             <li><code>planka_compare</code> — Модуль сопоставления ресторанов (до 3 позиций для сравнения характеристик).</li>
             <li><code>planka_active_form_draft</code> — Непрерывный автосейв черновика аудита инспектора, предотвращающий потерю замеров при случайном обновлении вкладки.</li>
-            <li><code>planka-guide-v81-cache</code> — Системный офлайн-кэш Service Worker, обеспечивающий работу карты и каталога даже при отсутствии сотовой связи.</li>
+            <li><code>planka-guide-v82-cache</code> — Системный офлайн-кэш Service Worker, обеспечивающий работу карты и каталога даже при отсутствии сотовой связи.</li>
           </ul>
 
           <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">3. Отказ от коммерческих и поведенческих трекеров</h4>
@@ -2480,7 +2474,8 @@
         <!-- ========================================================================= -->
         <!-- TAB 6: TRADEMARK & QUALITY MARK REGULATIONS -->
         <!-- ========================================================================= -->
-        <div id="legalTabContent_trademark" class="hidden">
+        <div style="height: 1px; background: var(--border-color); margin: 2.25rem 0;"></div>
+        <div id="legalTabContent_trademark">
           <div style="background: rgba(197,168,128,0.08); border-left: 3px solid var(--gold-deep); padding: 0.85rem 1.15rem; border-radius: 0.35rem; margin-bottom: 1.25rem;">
             <strong style="color: var(--gold-deep); font-size: 0.875rem;">РЕГЛАМЕНТ ИСПОЛЬЗОВАНИЯ СИМВОЛИКИ И «ЗНАКА КАЧЕСТВА»</strong><br>
             <span style="font-size: 0.725rem; color: var(--text-muted);">Интеллектуальная собственность, маркировка залов и условия дипломирования</span>
@@ -3326,7 +3321,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v81') || 
+      var stored = localStorage.getItem('planka_guide_db_v82') || 
                    localStorage.getItem('planka_guide_db_v78') || 
                    localStorage.getItem('planka_guide_db_v77') || 
                    localStorage.getItem('planka_guide_db_v76') || 
@@ -3462,7 +3457,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v81', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v82', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -5403,43 +5398,29 @@
       }
     }
 
-    function openLegalModal(initialTab) {
-      if (initialTab) {
-        switchLegalTab(initialTab);
-      } else {
-        switchLegalTab('privacy');
-      }
+    function openLegalModal(targetSection) {
       openModal('legalModal');
+      if (targetSection) {
+        setTimeout(function() {
+          var targetMap = {
+            'privacy': 'legalTabContent_privacy',
+            'terms': 'legalTabContent_terms',
+            'opinions': 'legalTabContent_opinions',
+            'charter': 'legalTabContent_charter',
+            'cookies': 'legalTabContent_cookies',
+            'trademark': 'legalTabContent_trademark'
+          };
+          var elId = targetMap[targetSection] || targetSection;
+          var el = document.getElementById(elId);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 150);
+      }
     }
 
     function closeLegalModal() {
       closeModal('legalModal');
-    }
-
-    function switchLegalTab(tabId) {
-      var tabs = ['privacy', 'terms', 'opinions', 'charter', 'cookies', 'trademark'];
-      for (var i = 0; i < tabs.length; i++) {
-        var tId = tabs[i];
-        var contentEl = document.getElementById('legalTabContent_' + tId);
-        var btnEl = document.getElementById('legalTabBtn_' + tId);
-        if (contentEl) {
-          if (tId === tabId) contentEl.classList.remove('hidden');
-          else contentEl.classList.add('hidden');
-        }
-        if (btnEl) {
-          if (tId === tabId) {
-            btnEl.classList.add('active');
-            btnEl.style.background = 'var(--text-main)';
-            btnEl.style.color = 'var(--bg-surface)';
-            btnEl.style.borderColor = 'var(--text-main)';
-          } else {
-            btnEl.classList.remove('active');
-            btnEl.style.background = 'var(--bg-subtle)';
-            btnEl.style.color = 'var(--text-muted)';
-            btnEl.style.borderColor = 'var(--border-subtle)';
-          }
-        }
-      }
     }
 
     function acceptCookieConsent() {
@@ -11900,7 +11881,7 @@
           // Deduplicate remote venues and local drafts by name and ID
           var combined = remoteVenues.concat(draftList);
           venues = deduplicateVenues(combined);
-          safeSetItem('planka_guide_db_v81', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v82', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
