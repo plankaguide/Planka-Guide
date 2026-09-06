@@ -1722,6 +1722,7 @@
           <div class="inspector-toolbar-btns">
             <button onclick="openInspectorManualModal()" type="button" class="btn btn-gold" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem;">📘 Обучение инспектора</button>
             <button onclick="installPWAApp()" type="button" id="btnInstallAppInspector" class="btn btn-light hidden" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem; background: #27272A; color: #FFF; border-color: #3F3F46;" title="Установить служебное PWA-приложение инспектора">📲 Установить PWA</button>
+            <button id="btnOfflineQueue" onclick="openOfflineQueueModal()" type="button" class="btn btn-light hidden" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem; background: #FEF3C7; color: #92400E; border-color: #FCD34D; font-weight: 800;" title="Офлайн-очередь отчетов инспекции">⏳ Офлайн-очередь <span id="offlineQueueCountBadge">(0)</span></button>
             <button onclick="openStopwatchModal()" type="button" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem; background: #27272A; color: #FFF; border-color: #3F3F46;">⏱ Секундомер таймингов</button>
             <button onclick="openNewAuditModal()" type="button" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem; background: #27272A; color: #FFF; border-color: #3F3F46;">+ Новый аудит</button>
             <button onclick="openSuggestionsInboxModal()" type="button" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.6875rem; background: #27272A; color: #FFF; border-color: #3F3F46;">
@@ -2682,6 +2683,39 @@
     </div>
   </div>
 
+  
+  <!-- MODAL: OFFLINE AUDIT QUEUE FOR CELLARS & BASEMENTS -->
+  <div id="offlineQueueModal" class="modal-overlay" onclick="closeOfflineQueueModal()">
+    <div class="modal-box" style="max-width: 580px; padding: 2.25rem;" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+        <div>
+          <span style="font-size: 0.625rem; font-family: ui-monospace, monospace; text-transform: uppercase; font-weight: 800; color: #92400E;">ПОЛЕВОЙ АУДИТ В ЦОКОЛЯХ И ПОДВАЛАХ</span>
+          <h3 class="font-serif" style="font-size: 1.35rem; font-weight: 900; color: inherit; margin-top: 0.15rem;">Офлайн-очередь отчетов инспекции</h3>
+        </div>
+        <button onclick="closeOfflineQueueModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2rem; height: 2rem; border-radius: 9999px; cursor: pointer; font-weight: 900;">✕</button>
+      </div>
+
+      <div style="font-size: 0.8125rem; color: var(--text-body); line-height: 1.6; display: flex; flex-direction: column; gap: 1rem;">
+        <p style="font-size: 0.75rem; color: var(--text-muted);">
+          Отчёты, заполненные в подвальных залах и местах без связи. При появлении интернета (4G/Wi-Fi) система автоматически отправит их в облако Supabase:
+        </p>
+
+        <div id="offlineQueueModalList" style="display: flex; flex-direction: column; gap: 0.65rem; max-height: 42vh; overflow-y: auto;">
+          <!-- Populated by JS -->
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; gap: 0.65rem;">
+          <button type="button" onclick="processOfflineQueue()" class="btn btn-dark" style="flex: 1.5; padding: 0.75rem; font-weight: 800; font-size: 0.8125rem; background: var(--gold-deep); color: #18181B;">
+            🔄 Синхронизировать сейчас
+          </button>
+          <button type="button" onclick="closeOfflineQueueModal()" class="btn btn-light" style="flex: 1; padding: 0.75rem; font-size: 0.8125rem;">
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PWA MOBILE INSTALLATION INSTRUCTIONS -->
   <div id="pwaInstallModal" class="modal-overlay" onclick="closePwaInstallModal()">
     <div class="modal-box text-center" style="max-width: 440px; padding: 2.25rem;" onclick="event.stopPropagation()">
@@ -2955,7 +2989,8 @@
                 <span style="color: var(--text-muted);">Индекс ценности:</span>
                 <strong id="modalValueScore">8.8 / 10</strong>
               </div>
-              <div class="flex items-center justify-between">
+              <div id="modalFreshnessStatusBadge" style="margin-bottom: 0.85rem;"></div>
+            <div class="flex items-center justify-between">
                 <span style="color: var(--text-muted);">Дата аудита:</span>
                 <span id="modalDate" style="font-weight: 700;">2026-08-10</span>
               </div>
@@ -4321,6 +4356,201 @@
 
     // Hero Slide Carousel
     
+    
+    // =========================================================================
+    // 4. AUDIT FRESHNESS & QUALITY MARK EXPIRY ENGINE (MICHELIN LIFECYCLE)
+    // =========================================================================
+    function getAuditFreshnessInfo(dateStr) {
+      if (!dateStr) dateStr = '2026-08-10';
+      var auditDate = new Date(dateStr);
+      if (isNaN(auditDate.getTime())) auditDate = new Date('2026-08-10');
+
+      var now = new Date();
+      var diffMs = now.getTime() - auditDate.getTime();
+      var diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+      var diffMonths = Math.floor(diffDays / 30.4);
+
+      var monthsRu = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+      var monthName = monthsRu[auditDate.getMonth()] || 'Август';
+      var yearNum = auditDate.getFullYear() || 2026;
+      var seasonLabel = monthName + ' ' + yearNum;
+
+      var isExpired = diffDays >= 365;
+      var statusText = '';
+      var statusClass = '';
+
+      if (isExpired) {
+        var nextYear = yearNum + 1;
+        statusText = 'Требуется контрольная перепроверка сезона ' + yearNum + '/' + nextYear;
+        statusClass = 'freshness-expired';
+      } else if (diffDays < 7) {
+        statusText = 'Актуально (проверено на этой неделе)';
+        statusClass = 'freshness-fresh';
+      } else if (diffDays < 30) {
+        var weeks = Math.max(1, Math.floor(diffDays / 7));
+        var wWord = (weeks === 1) ? 'неделю' : ((weeks < 5) ? 'недели' : 'недель');
+        statusText = 'Актуально (проверено ' + weeks + ' ' + wWord + ' назад)';
+        statusClass = 'freshness-fresh';
+      } else {
+        var mWord = (diffMonths === 1) ? 'месяц' : ((diffMonths < 5) ? 'месяца' : 'месяцев');
+        statusText = 'Актуально (проверено ' + diffMonths + ' ' + mWord + ' назад)';
+        statusClass = 'freshness-good';
+      }
+
+      return {
+        seasonLabel: seasonLabel,
+        statusText: statusText,
+        statusClass: statusClass,
+        isExpired: isExpired,
+        diffDays: diffDays,
+        dateStr: dateStr
+      };
+    }
+
+    // =========================================================================
+    // 3. FIELD INSPECTOR OFFLINE QUEUE (BACKGROUND SYNC IN CELLARS/BASEMENTS)
+    // =========================================================================
+    const OFFLINE_QUEUE_KEY = 'planka_offline_audit_queue';
+    var isSyncingQueue = false;
+
+    function getOfflineQueue() {
+      try {
+        var raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch(e) {
+        return [];
+      }
+    }
+
+    function saveOfflineQueue(queue) {
+      try {
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+      } catch(e) {
+        console.warn('Could not save offline queue:', e);
+      }
+      updateOfflineQueueUI();
+    }
+
+    function enqueueOfflineAudit(item) {
+      var queue = getOfflineQueue();
+      queue.unshift(item);
+      saveOfflineQueue(queue);
+    }
+
+    function updateOfflineQueueUI() {
+      var queue = getOfflineQueue();
+      var count = queue.length;
+      var btn = document.getElementById('btnOfflineQueue');
+      var badge = document.getElementById('offlineQueueCountBadge');
+      if (btn) {
+        if (isAdmin && count > 0) btn.classList.remove('hidden');
+        else btn.classList.add('hidden');
+      }
+      if (badge) badge.innerText = '(' + count + ')';
+    }
+
+    async function processOfflineQueue() {
+      if (isSyncingQueue || !navigator.onLine || !supabaseClient) return;
+      var queue = getOfflineQueue();
+      if (queue.length === 0) return;
+
+      isSyncingQueue = true;
+      console.log('🔄 Background Sync: Processing offline audit queue (' + queue.length + ' audits)...');
+      var successCount = 0;
+      var remainingQueue = [];
+
+      for (var i = 0; i < queue.length; i++) {
+        var item = queue[i];
+        try {
+          var uploadedPhotos = (item.photos || []).slice();
+          if (Array.isArray(item.photos)) {
+            for (var p = 0; p < item.photos.length; p++) {
+              var pData = item.photos[p];
+              if (pData && pData.indexOf('data:image') === 0) {
+                var match = pData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+                if (match) {
+                  var ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+                  var rawB64 = match[2];
+                  var byteChars = atob(rawB64);
+                  var byteNums = new Array(byteChars.length);
+                  for (var b = 0; b < byteChars.length; b++) byteNums[b] = byteChars.charCodeAt(b);
+                  var byteArray = new Uint8Array(byteNums);
+                  var blob = new Blob([byteArray], { type: 'image/' + ext });
+                  var fileName = 'audit_' + Date.now() + '_' + p + '.' + ext;
+
+                  var upRes = await supabaseClient.storage.from('planka-media').upload(fileName, blob, { contentType: 'image/' + ext });
+                  if (!upRes.error && upRes.data) {
+                    var pUrl = supabaseClient.storage.from('planka-media').getPublicUrl(fileName);
+                    if (pUrl && pUrl.data && pUrl.data.publicUrl) {
+                      uploadedPhotos[p] = pUrl.data.publicUrl;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          item.auditPayload.media_urls = uploadedPhotos;
+          if (item.auditPayload.details) item.auditPayload.details.photos = uploadedPhotos;
+
+          if (item.isEditing && item.editId) {
+            var upRes = await supabaseClient.from('venues').update(item.auditPayload).eq('id', item.editId);
+            if (upRes.error) throw upRes.error;
+          } else {
+            var inRes = await supabaseClient.from('venues').insert([item.auditPayload]);
+            if (inRes.error) throw inRes.error;
+          }
+
+          // Remove temporary draft if it was saved locally
+          if (item.draftRecord && item.draftRecord.id) {
+            venues = venues.filter(function(v) { return v.id !== item.draftRecord.id; });
+            saveDB();
+          }
+          successCount++;
+        } catch(err) {
+          console.warn('Queue item sync failed, will retry later:', err);
+          remainingQueue.push(item);
+        }
+      }
+
+      saveOfflineQueue(remainingQueue);
+      isSyncingQueue = false;
+
+      if (successCount > 0) {
+        alert('🟢 Офлайн-синхронизация завершена!\n\nУспешно отправлено в облачную базу Supabase: ' + successCount + ' отчётов тайных инспекций.');
+        syncFromSupabase();
+      }
+    }
+
+    function openOfflineQueueModal() {
+      var listEl = document.getElementById('offlineQueueModalList');
+      var queue = getOfflineQueue();
+      if (!listEl) return;
+
+      if (queue.length === 0) {
+        listEl.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.8125rem;">Офлайн-очередь пуста. Все замеры отправлены в базу.</div>';
+      } else {
+        var html = '';
+        for (var i = 0; i < queue.length; i++) {
+          var itm = queue[i];
+          var timeStr = itm.enqueuedAt ? new Date(itm.enqueuedAt).toLocaleTimeString('ru-RU') : 'недавно';
+          html += '<div style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">' +
+            '<div>' +
+              '<strong style="font-size: 0.9375rem; color: var(--text-main); font-family: Playfair Display, Georgia, serif; display: block;">' + escapeHTML(itm.name) + '</strong>' +
+              '<span style="font-size: 0.6875rem; color: var(--text-muted);">' + escapeHTML(itm.auditPayload.city || '') + ' • Балл: ' + itm.auditPayload.total_score + '/100 • Ожидает сети с ' + timeStr + '</span>' +
+            '</div>' +
+            '<span style="font-size: 0.6875rem; background: #FEF3C7; color: #92400E; padding: 0.2rem 0.55rem; border-radius: 9999px; font-weight: 800;">В очереди</span>' +
+          '</div>';
+        }
+        listEl.innerHTML = html;
+      }
+      openModal('offlineQueueModal');
+    }
+
+    function closeOfflineQueueModal() {
+      closeModal('offlineQueueModal');
+    }
+
     // DEDUPLICATION ENGINE: Eliminates duplicates by unique venue name and ID
     function deduplicateVenues(venueList) {
       if (!Array.isArray(venueList)) return [];
@@ -4507,12 +4737,14 @@
 
         var vibePills = (tv.vibe_tags || []).slice(0, 2).map(function(t){ return '<span class="vibe-tag-pill">' + escapeHTML(t) + '</span>'; }).join(' ');
         var sId = escapeHTML(String(tv.id));
+        var freshInfo = getAuditFreshnessInfo(tv.date);
         var checkNum = (typeof tv.avg_check === 'number' ? tv.avg_check : (parseInt(tv.avg_check, 10) || 2000));
 
         html += '<div onclick="openVenueModal(\'' + sId + '\')" class="selection-card">' +
           '<div class="card-cover">' +
             coverMediaHtml +
             '<div class="card-score-badge">' + escapeHTML(tv.total_score) + ' / 100</div>' +
+            (freshInfo.isExpired ? '<div style="position: absolute; bottom: 0.65rem; left: 0.65rem; background: rgba(245, 158, 11, 0.95); color: #18181B; font-size: 0.5625rem; font-family: ui-monospace, monospace; font-weight: 900; padding: 0.2rem 0.5rem; border-radius: 0.25rem; letter-spacing: 0.04em;">⚠️ СЕЗОН ИСТЁК • ПЕРЕПРОВЕРКА</div>' : '') +
             '<div class="card-top-left-group">' +
               '<button type="button" class="card-icon-btn card-fav-btn ' + (isFavorite(tv.id) ? 'active' : '') + '" onclick="toggleFavorite(\'' + sId + '\', event)" title="В избранное">' +
                 (isFavorite(tv.id) ? '♥' : '♡') +
@@ -4532,7 +4764,11 @@
               '<span class="badge-gold">Знак Качества</span>' +
             '</div>' +
             '<h3 class="font-serif" style="font-size: 1.35rem; font-weight: 900; color: inherit; margin-bottom: 0.2rem;">' + escapeHTML(tv.name) + '</h3>' +
-            '<p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">' + escapeHTML(tv.city) + (tv.district ? ' (' + escapeHTML(tv.district) + ')' : '') + ', ' + escapeHTML(tv.address || 'Центральный район') + '</p>' +
+            '<p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.35rem;">' + escapeHTML(tv.city) + (tv.district ? ' (' + escapeHTML(tv.district) + ')' : '') + ', ' + escapeHTML(tv.address || 'Центральный район') + '</p>' +
+            '<div style="font-size: 0.625rem; font-family: ui-monospace, monospace; color: var(--text-muted); margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.4rem;">' +
+              '<span style="width: 7px; height: 7px; border-radius: 50%; background: ' + (freshInfo.isExpired ? '#F59E0B' : '#10B981') + '; display: inline-block;"></span>' +
+              '<span>Инспекция: <strong>' + escapeHTML(freshInfo.seasonLabel) + '</strong> • ' + (freshInfo.isExpired ? '<span style="color: #D97706; font-weight: 800;">⚠️ ' + escapeHTML(freshInfo.statusText) + '</span>' : escapeHTML(freshInfo.statusText)) + '</span>' +
+            '</div>' +
             '<div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">' + vibePills + '</div>' +
             '<div class="flex items-center justify-between" style="border-top: 1px solid var(--border-color); padding-top: 0.85rem; margin-top: 0.75rem; font-size: 0.75rem;">' +
               '<strong style="color: inherit;">' + checkNum.toLocaleString('ru-RU') + ' ₽ <span style="font-weight: normal; color: var(--text-muted); font-size: 0.75rem;">/ чек</span></strong>' +
@@ -4651,12 +4887,14 @@
 
         var vibePills = (item.vibe_tags || []).slice(0, 2).map(function(t){ return '<span class="vibe-tag-pill">' + escapeHTML(t) + '</span>'; }).join(' ');
         var sId = escapeHTML(String(item.id));
+        var freshInfo = getAuditFreshnessInfo(item.date);
         var checkNum = (typeof item.avg_check === 'number' ? item.avg_check : (parseInt(item.avg_check, 10) || 2000));
 
         return '<div onclick="openVenueModal(\'' + sId + '\')" class="card ' + (isRibbon ? 'catalog-ribbon-card' : '') + ' ' + (isItemDraft ? 'draft-card' : '') + '">' +
           '<div class="card-cover">' +
             coverMediaHtml +
             (isItemDraft ? '<div class="draft-badge-overlay">ЧЕРНОВИК</div>' : '') +
+            (freshInfo.isExpired ? '<div style="position: absolute; bottom: 0.65rem; left: 0.65rem; background: rgba(245, 158, 11, 0.95); color: #18181B; font-size: 0.5625rem; font-family: ui-monospace, monospace; font-weight: 900; padding: 0.2rem 0.5rem; border-radius: 0.25rem; letter-spacing: 0.04em;">⚠️ СЕЗОН ИСТЁК • ПЕРЕПРОВЕРКА</div>' : '') +
             '<div class="card-score-badge">' + item.total_score + ' / 100</div>' +
             '<div class="card-top-left-group">' +
               '<button type="button" class="card-icon-btn card-fav-btn ' + (isFavorite(item.id) ? 'active' : '') + '" onclick="toggleFavorite(\'' + sId + '\', event)" title="В избранное">' +
@@ -4678,7 +4916,11 @@
                 (isItemDraft ? '<span class="badge-draft">Черновик</span>' : (isQuality ? '<span class="badge-gold">Знак Качества</span>' : '<span class="badge-regular">' + escapeHTML(item.grade) + '</span>')) +
               '</div>' +
               '<h3 class="font-serif" style="font-size: 1.35rem; font-weight: 900; color: inherit; margin-bottom: 0.2rem;">' + escapeHTML(item.name) + '</h3>' +
-              '<p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">' + escapeHTML(item.city) + (item.district ? ' (' + escapeHTML(item.district) + ')' : '') + ', ' + escapeHTML(item.address || 'Центральный район') + '</p>' +
+              '<p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.35rem;">' + escapeHTML(item.city) + (item.district ? ' (' + escapeHTML(item.district) + ')' : '') + ', ' + escapeHTML(item.address || 'Центральный район') + '</p>' +
+              '<div style="font-size: 0.625rem; font-family: ui-monospace, monospace; color: var(--text-muted); margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.4rem;">' +
+                '<span style="width: 7px; height: 7px; border-radius: 50%; background: ' + (freshInfo.isExpired ? '#F59E0B' : '#10B981') + '; display: inline-block;"></span>' +
+                '<span>Инспекция: <strong>' + escapeHTML(freshInfo.seasonLabel) + '</strong> • ' + (freshInfo.isExpired ? '<span style="color: #D97706; font-weight: 800;">⚠️ ' + escapeHTML(freshInfo.statusText) + '</span>' : escapeHTML(freshInfo.statusText)) + '</span>' +
+              '</div>' +
               '<div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">' + vibePills + '</div>' +
             '</div>' +
             '<div class="flex items-center justify-between" style="border-top: 1px solid var(--border-color); padding-top: 0.85rem; margin-top: 0.75rem; font-size: 0.75rem;">' +
@@ -5015,6 +5257,15 @@
       setText('modalCheck', (target.avg_check !== undefined && target.avg_check !== null) ? ((typeof target.avg_check === 'number' ? target.avg_check : (parseInt(target.avg_check, 10) || 2000)).toLocaleString('ru-RU') + ' ₽') : '');
       setText('modalValueScore', (target.value_score || 8.8) + ' / 10');
       setText('modalDate', target.date || '2026-08-10');
+      var modalFresh = getAuditFreshnessInfo(target.date);
+      var freshBannerEl = document.getElementById('modalFreshnessStatusBadge');
+      if (freshBannerEl) {
+        if (modalFresh.isExpired) {
+          freshBannerEl.innerHTML = '<div style="background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; color: #D97706; padding: 0.55rem 0.85rem; border-radius: 0.35rem; font-size: 0.6875rem; font-weight: 800; display: inline-flex; align-items: center; gap: 0.35rem;">⚠️ СРОК ДЕЙСТВИЯ АУДИТА ПРЕВЫСИЛ 12 МЕСЯЦЕВ: ' + escapeHTML(modalFresh.statusText) + '</div>';
+        } else {
+          freshBannerEl.innerHTML = '<div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; color: #10B981; padding: 0.45rem 0.85rem; border-radius: 0.35rem; font-size: 0.6875rem; font-weight: 800; display: inline-flex; align-items: center; gap: 0.35rem;">✓ АКТУАЛЬНЫЙ АУДИТ PLANKA GUIDE • Сезон: ' + escapeHTML(modalFresh.seasonLabel) + ' (' + escapeHTML(modalFresh.statusText) + ')</div>';
+        }
+      }
       setText('modalGradeText', target.status === 'draft' ? 'Черновик инспектора' : (target.total_score >= 90 ? 'Знак Качества' : target.grade));
       setText('modalDish', target.signature_dish || 'Фирменное блюдо');
       setText('modalDishReview', target.dish_review ? '«' + target.dish_review + '»' : '');
@@ -5533,6 +5784,7 @@
         if (indM) indM.classList.remove('hidden');
         if (subHeader) subHeader.classList.remove('hidden');
         if (btnInsp) btnInsp.classList.remove('hidden');
+        updateOfflineQueueUI();
       } else {
         if (indD) indD.classList.add('hidden');
         if (indM) indM.classList.add('hidden');
@@ -6365,28 +6617,6 @@
       closeModal('auditEditorModal');
     }
 
-    
-    // TRANSLITERATED STORAGE SLUG GENERATOR: Creates clean organized subfolders per venue
-    function getVenueStorageSlug(name, address) {
-      var ru = {
-        'а':'a', 'б':'b', 'в':'v', 'г':'g', 'д':'d', 'е':'e', 'ё':'yo', 'ж':'zh',
-        'з':'z', 'и':'i', 'й':'y', 'к':'k', 'л':'l', 'м':'m', 'н':'n', 'о':'o',
-        'п':'p', 'р':'r', 'с':'s', 'т':'t', 'у':'u', 'ф':'f', 'х':'kh', 'ц':'ts',
-        'ч':'ch', 'ш':'sh', 'щ':'shch', 'ъ':'', 'ы':'y', 'ь':'', 'э':'e', 'ю':'yu', 'я':'ya'
-      };
-      var raw = ((name || 'Venue') + ((address && address.trim()) ? (' - ' + address) : '')).toLowerCase();
-      var translit = '';
-      for (var i = 0; i < raw.length; i++) {
-        var c = raw[i];
-        translit += (ru[c] !== undefined) ? ru[c] : c;
-      }
-      return translit
-        .replace(/[\/\\:*?"<>|#%]/g, '')
-        .replace(/\s+/g, '_')
-        .replace(/_+/g, '_')
-        .substring(0, 75);
-    }
-
     async function submitAuditForm(targetStatus) {
       var nameVal = document.getElementById('formName').value.trim();
       var cityVal = document.getElementById('formCity').value.trim();
@@ -6476,6 +6706,30 @@
         history: [{ date: todayStr, score: total, notes: auditNote }]
       };
 
+      // OFFLINE QUEUE CHECK (For Cellars, Basements & Signal Drops)
+      var offlinePackage = {
+        id: 'off_' + Date.now(),
+        name: nameVal,
+        targetStatus: targetStatus,
+        isEditing: isEditing,
+        editId: editId,
+        photos: currentEditingPhotos || [],
+        draftRecord: draftRecord,
+        auditPayload: auditPayload,
+        enqueuedAt: new Date().toISOString()
+      };
+
+      if (!navigator.onLine) {
+        enqueueOfflineAudit(offlinePackage);
+        venues.unshift(draftRecord);
+        saveDB();
+        updateStats();
+        closeAuditEditorModal();
+        localStorage.removeItem(FORM_DRAFT_KEY);
+        alert('⏳ Связь отсутствует (подвал / цоколь / нет сети).\n\nОтчёт по заведению «' + nameVal + '» (' + total + ' б.) надёжно сохранён в ОФЛАЙН-ОЧЕРЕДЬ инспектора!\n\nКак только телефон поймает 4G/Wi-Fi, отчёт и фотографии автоматически отправятся в облачную базу данных Supabase.');
+        return;
+      }
+
       // 1. Explicit Local Draft Request
       if (targetStatus === 'draft') {
         if (editId) {
@@ -6493,7 +6747,7 @@
         return;
       }
 
-      // 2. Cloud Submission to Supabase (3 Dedicated Folders & Subfolder per Venue)
+      // 2. Cloud Submission to Supabase
       var isEditing = !!editId;
       var finalDbStatus = 'archived';
 
@@ -6503,13 +6757,9 @@
       } else {
         finalDbStatus = 'archived';
       }
-
-      var venueSlug = getVenueStorageSlug(nameVal, addrText);
       var uploadedPhotos = currentEditingPhotos.slice();
-      var uploadedPrivatePhotos = currentEditingPrivatePhotos.slice();
-      var uploadedVideoUrl = currentEditingVideo;
 
-      // 1. PUBLIC PHOTOS -> planka-media/photos/{venueSlug}/
+      // Upload base64 photos to Supabase Storage bucket 'planka-media'
       if (supabaseClient && Array.isArray(currentEditingPhotos)) {
         for (var pIdx = 0; pIdx < currentEditingPhotos.length; pIdx++) {
           var pData = currentEditingPhotos[pIdx];
@@ -6522,92 +6772,22 @@
                 var byteChars = atob(rawB64);
                 var byteNums = new Array(byteChars.length);
                 for (var b = 0; b < byteChars.length; b++) { byteNums[b] = byteChars.charCodeAt(b); }
-                var blob = new Blob([new Uint8Array(byteNums)], { type: 'image/' + ext });
-                var filePath = 'photos/' + venueSlug + '/photo_' + (pIdx + 1) + '_' + Date.now() + '.' + ext;
+                var byteArray = new Uint8Array(byteNums);
+                var blob = new Blob([byteArray], { type: 'image/' + ext });
+                var fileName = 'audit_' + Date.now() + '_' + pIdx + '.' + ext;
 
-                var upRes = await supabaseClient.storage.from('planka-media').upload(filePath, blob, { contentType: 'image/' + ext, upsert: true });
-                if (!upRes.error && upRes.data) {
-                  var pubRes = supabaseClient.storage.from('planka-media').getPublicUrl(filePath);
-                  if (pubRes && pubRes.data && pubRes.data.publicUrl) {
-                    uploadedPhotos[pIdx] = pubRes.data.publicUrl;
-                  }
-                } else if (upRes.error) {
-                  console.warn('Public photo upload warning:', upRes.error.message);
-                }
-              }
-            } catch(e) {
-              console.warn('Public photo upload error:', e);
-            }
-          }
-        }
-      }
-
-      // 2. SECRET / PRIVATE PHOTOS -> planka-private/secret_photos/{venueSlug}/ (fallback: planka-media/private/{venueSlug}/)
-      if (supabaseClient && Array.isArray(currentEditingPrivatePhotos)) {
-        for (var sIdx = 0; sIdx < currentEditingPrivatePhotos.length; sIdx++) {
-          var sData = currentEditingPrivatePhotos[sIdx];
-          if (sData && sData.indexOf('data:image') === 0) {
-            try {
-              var matchS = sData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
-              if (matchS) {
-                var extS = matchS[1] === 'jpeg' ? 'jpg' : matchS[1];
-                var rawB64S = matchS[2];
-                var byteCharsS = atob(rawB64S);
-                var byteNumsS = new Array(byteCharsS.length);
-                for (var bs = 0; bs < byteCharsS.length; bs++) { byteNumsS[bs] = byteCharsS.charCodeAt(bs); }
-                var blobS = new Blob([new Uint8Array(byteNumsS)], { type: 'image/' + extS });
-
-                // Try dedicated private bucket first
-                var privateFilePath = 'secret_photos/' + venueSlug + '/secret_' + (sIdx + 1) + '_' + Date.now() + '.' + extS;
-                var privUpRes = await supabaseClient.storage.from('planka-private').upload(privateFilePath, blobS, { contentType: 'image/' + extS, upsert: true });
-
-                if (!privUpRes.error && privUpRes.data) {
-                  var privPubRes = supabaseClient.storage.from('planka-private').getPublicUrl(privateFilePath);
-                  if (privPubRes && privPubRes.data && privPubRes.data.publicUrl) {
-                    uploadedPrivatePhotos[sIdx] = privPubRes.data.publicUrl;
-                  }
-                } else {
-                  // Fallback to planka-media/private/{venueSlug}/
-                  var altPath = 'private/' + venueSlug + '/secret_' + (sIdx + 1) + '_' + Date.now() + '.' + extS;
-                  var altUp = await supabaseClient.storage.from('planka-media').upload(altPath, blobS, { contentType: 'image/' + extS, upsert: true });
-                  if (!altUp.error && altUp.data) {
-                    var altPub = supabaseClient.storage.from('planka-media').getPublicUrl(altPath);
-                    if (altPub && altPub.data && altPub.data.publicUrl) {
-                      uploadedPrivatePhotos[sIdx] = altPub.data.publicUrl;
-                    }
+                var uploadRes = await supabaseClient.storage.from('planka-media').upload(fileName, blob, { contentType: 'image/' + ext });
+                if (!uploadRes.error && uploadRes.data) {
+                  var publicUrlRes = supabaseClient.storage.from('planka-media').getPublicUrl(fileName);
+                  if (publicUrlRes && publicUrlRes.data && publicUrlRes.data.publicUrl) {
+                    uploadedPhotos[pIdx] = publicUrlRes.data.publicUrl;
                   }
                 }
               }
-            } catch(e) {
-              console.warn('Private photo upload error:', e);
+            } catch(upErr) {
+              console.warn('Storage upload error for photo ' + pIdx + ':', upErr);
             }
           }
-        }
-      }
-
-      // 3. VIDEO -> planka-media/videos/{venueSlug}/
-      if (supabaseClient && currentEditingVideo && currentEditingVideo.indexOf('data:video') === 0) {
-        try {
-          var vMatch = currentEditingVideo.match(/^data:video\/([a-zA-Z0-9]+);base64,(.+)$/);
-          if (vMatch) {
-            var vExt = vMatch[1];
-            var vRaw = vMatch[2];
-            var vBytes = atob(vRaw);
-            var vNums = new Array(vBytes.length);
-            for (var vi = 0; vi < vBytes.length; vi++) { vNums[vi] = vBytes.charCodeAt(vi); }
-            var vBlob = new Blob([new Uint8Array(vNums)], { type: 'video/' + vExt });
-            var vPath = 'videos/' + venueSlug + '/video_' + Date.now() + '.' + vExt;
-
-            var vUpRes = await supabaseClient.storage.from('planka-media').upload(vPath, vBlob, { contentType: 'video/' + vExt, upsert: true });
-            if (!vUpRes.error && vUpRes.data) {
-              var vPubRes = supabaseClient.storage.from('planka-media').getPublicUrl(vPath);
-              if (vPubRes && vPubRes.data && vPubRes.data.publicUrl) {
-                uploadedVideoUrl = vPubRes.data.publicUrl;
-              }
-            }
-          }
-        } catch(e) {
-          console.warn('Video upload error:', e);
         }
       }
 
@@ -6620,8 +6800,6 @@
         total_score: total,
         status: finalDbStatus,
         media_urls: uploadedPhotos,
-        private_media_urls: uploadedPrivatePhotos,
-        private_notes: privNotes || "",
         review: fullRevText || ("Контрольный аудит: " + nameVal + ". Итог: " + total + " б."),
         details: {
           name: nameVal,
@@ -6648,9 +6826,9 @@
           private_notes: privNotes || "",
           urban_notes: urbanNotesText || "",
           ergonomics_notes: ergoNotesText || "",
-          video: uploadedVideoUrl,
+          video: currentEditingVideo,
           photos: uploadedPhotos,
-          private_photos: uploadedPrivatePhotos,
+          private_photos: currentEditingPrivatePhotos,
           pros: prosList,
           cons: consList,
           vibe_tags: vibeList,
@@ -6686,7 +6864,15 @@
             console.log('✓ Audit inserted to Supabase with status:', finalDbStatus);
           }
         } catch(netErr) {
-          console.warn('Network error when sending to Supabase:', netErr);
+          console.warn('Network error when sending to Supabase, enqueuing to offline queue:', netErr);
+          enqueueOfflineAudit(offlinePackage);
+          venues.unshift(draftRecord);
+          saveDB();
+          updateStats();
+          closeAuditEditorModal();
+          localStorage.removeItem(FORM_DRAFT_KEY);
+          alert('⚠️ Нестабильная сеть при отправке.\n\nОтчёт по заведению «' + nameVal + '» зафиксирован в офлайн-очереди устройства. Система автоматически завершит синхронизацию при стабильном 4G/Wi-Fi сигнале.');
+          return;
         }
       }
 
@@ -6832,9 +7018,19 @@
         }
       }
     }
-    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('online', function() {
+      updateOnlineStatus();
+      processOfflineQueue();
+    });
     window.addEventListener('offline', updateOnlineStatus);
     updateOnlineStatus();
+
+    // Auto-process queue every 25 seconds when connection is active
+    setInterval(function() {
+      if (navigator.onLine && getOfflineQueue().length > 0) {
+        processOfflineQueue();
+      }
+    }, 25000);
 
     
     // SYNC MOBILE & DESKTOP THEME / CITY CONTROLS
@@ -12260,8 +12456,7 @@
             v.value_score = (v.value_score !== undefined && v.value_score !== null) ? Number(v.value_score) : 8.5;
             
             v.photos = (item.media_urls && Array.isArray(item.media_urls) && item.media_urls.length > 0) ? item.media_urls : (v.photos || []);
-            v.private_photos = (item.private_media_urls && Array.isArray(item.private_media_urls) && item.private_media_urls.length > 0) ? item.private_media_urls : (v.private_photos || []);
-            v.private_notes = item.private_notes || v.private_notes || '';
+            v.private_photos = v.private_photos || [];
             v.signature_dish = v.signature_dish || 'Фирменное блюдо';
             v.dish_review = v.dish_review || '';
             v.full_review = item.review || v.full_review || '';

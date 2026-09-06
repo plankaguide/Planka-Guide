@@ -125,3 +125,16 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Background Sync for Offline Audits
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-audits') {
+    event.waitUntil(
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'PROCESS_OFFLINE_QUEUE' });
+        });
+      })
+    );
+  }
+});
