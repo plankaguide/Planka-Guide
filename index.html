@@ -78,13 +78,31 @@
     
   
     /* CINEMATIC SPOTLIGHT & CARD FOCUS HIGHLIGHT (DIMMING EFFECT) */
+    .spotlight-screen-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 12, 0.82);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 9998;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .spotlight-screen-overlay.active {
+      opacity: 1;
+    }
     .card-spotlight-active {
       position: relative !important;
-      z-index: 1050 !important;
-      transform: scale(1.03) !important;
+      z-index: 10001 !important;
+      box-shadow: 0 0 35px var(--gold-deep), 0 15px 45px rgba(0,0,0,0.85) !important;
       border-color: var(--gold-deep) !important;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.72), 0 0 45px var(--gold-deep) !important;
-      transition: transform 0.4s ease, box-shadow 0.6s ease, border-color 0.4s ease !important;
+      transform: scale(1.03) !important;
+      transition: transform 0.4s ease, box-shadow 0.5s ease, border-color 0.4s ease !important;
+    }
+    .selection-ribbon-stage.spotlight-elevated {
+      z-index: 10000 !important;
+      position: relative !important;
     }
 </style>
 
@@ -1578,6 +1596,8 @@
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
+  <div id="spotlightOverlay" class="spotlight-screen-overlay"></div>
+
   <div id="offlineStatusBar" class="offline-status-bar">⚡ Автономный режим — гид доступен без интернета</div>
 <!-- HEADER -->
   <header>
@@ -1606,7 +1626,7 @@
         <!-- Right Action Controls (Clean Cluster without Overcrowding) -->
         <div class="desktop-actions-group">
           <div style="width: 135px;">
-            <select id="cityFilter" onchange="applyFilters()">
+            <select id="cityFilter" onchange="var m=document.getElementById('cityFilterMobile'); if(m) m.value=this.value; applyFilters();">
               <option value="all" selected>Все локации</option>
               <option value="Москва">Москва</option>
               <option value="СПб">Санкт-Петербург</option>
@@ -1734,9 +1754,7 @@
         
         <div class="hero-search-wrap">
           <input type="text" id="searchInput" oninput="syncSearch(this.value)" onkeydown="if(event.key==='Enter') executeHeroSearch()" placeholder="Поиск по заведению, блюду, шефу, улице..." style="background: #FFFFFF; color: #18181B; border: none; padding: 0.85rem 1.15rem; border-radius: 0.35rem; font-size: 0.8125rem; flex: 1;">
-          <button onclick="executeHeroSearch()" type="button" class="btn btn-dark" style="border-radius: 0.35rem; padding: 0.85rem 1.35rem; font-weight: 800;">
-            НАЙТИ
-          </button>
+          <button onclick="executeHeroSearch(event)" ontouchend="executeHeroSearch(event)" type="button" class="btn btn-dark" style="border-radius: 0.35rem; padding: 0.85rem 1.35rem; font-weight: 800; cursor: pointer;">НАЙТИ</button>
         </div>
 
         <div id="heroFeaturedCard" class="hero-featured-box" onclick="openFeaturedHeroModal()">
@@ -2200,22 +2218,22 @@
         Для доступа к каталогу и досье инспекций подтвердите согласие со следующими базовыми положениями регламента:
       </p>
 
-      <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1.25rem 1.35rem; margin-bottom: 1.5rem; text-align: left; font-size: 0.75rem; color: var(--text-body); line-height: 1.65; display: flex; flex-direction: column; gap: 0.95rem;">
-        <div style="border-left: 2px solid var(--gold-deep); padding-left: 0.85rem;">
-          <strong style="color: var(--text-main); display: block; margin-bottom: 0.15rem;">Субъективные оценочные суждения (ст. 29 Конституции РФ, ст. 152 ГК РФ)</strong>
-          Рейтинговые баллы, оценки и рецензии являются авторским экспертным мнением тайных инспекторов на дату визита.
+      <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1.15rem 1.25rem; margin-bottom: 1.5rem; text-align: left; font-size: 0.75rem; color: var(--text-body); line-height: 1.6; display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+          <span style="color: var(--gold-deep); font-family: ui-monospace, monospace; font-weight: 900; font-size: 0.8125rem; line-height: 1.4;">01</span>
+          <div><strong style="color: var(--text-main);">Субъективные оценочные суждения (ст. 29 Конституции РФ, ст. 152 ГК РФ)</strong>: рейтинговые баллы и рецензии являются авторским экспертным мнением тайных инспекторов на дату визита.</div>
         </div>
-        <div style="border-left: 2px solid var(--border-color); padding-left: 0.85rem;">
-          <strong style="color: var(--text-main); display: block; margin-bottom: 0.15rem;">Политика конфиденциальности (152-ФЗ)</strong>
-          Гид не собирает персональные данные физических лиц, фиксируя исключительно открытые публичные сведения о заведениях.
+        <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+          <span style="color: var(--gold-deep); font-family: ui-monospace, monospace; font-weight: 900; font-size: 0.8125rem; line-height: 1.4;">02</span>
+          <div><strong style="color: var(--text-main);">Политика конфиденциальности (152-ФЗ)</strong>: гид не собирает персональные данные физических лиц, фиксируя исключительно открытые публичные сведения о заведениях.</div>
         </div>
-        <div style="border-left: 2px solid var(--border-color); padding-left: 0.85rem;">
-          <strong style="color: var(--text-main); display: block; margin-bottom: 0.15rem;">Технические файлы Cookie и кэш PWA</strong>
-          Сессионные файлы и память браузера используются для сохранения выбранной темы, списка избранного и офлайн-доступа.
+        <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+          <span style="color: var(--gold-deep); font-family: ui-monospace, monospace; font-weight: 900; font-size: 0.8125rem; line-height: 1.4;">03</span>
+          <div><strong style="color: var(--text-main);">Технические файлы Cookie и кэш PWA</strong>: мы используем сессионные файлы и память браузера для сохранения темы, избранного и автономного доступа без интернета.</div>
         </div>
-        <div style="border-left: 2px solid var(--border-color); padding-left: 0.85rem;">
-          <strong style="color: var(--text-main); display: block; margin-bottom: 0.15rem;">Возрастное ограничение (18+)</strong>
-          Ресурс содержит аналитические обзоры барных концепций и винных карт и предназначен строго для совершеннолетних.
+        <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+          <span style="color: var(--gold-deep); font-family: ui-monospace, monospace; font-weight: 900; font-size: 0.8125rem; line-height: 1.4;">04</span>
+          <div><strong style="color: var(--text-main);">Возрастное ограничение (18+)</strong>: ресурс содержит аналитические материалы о барных картах и предназначен строго для совершеннолетних лиц.</div>
         </div>
       </div>
 
@@ -2489,7 +2507,7 @@
             <li><code>planka_favorites</code> — Локальный список закладок («Избранное»), выбранных гостем. На внешние серверы не передается.</li>
             <li><code>planka_compare</code> — Модуль сопоставления ресторанов (до 3 позиций для сравнения характеристик).</li>
             <li><code>planka_active_form_draft</code> — Непрерывный автосейв черновика аудита инспектора, предотвращающий потерю замеров при случайном обновлении вкладки.</li>
-            <li><code>planka-guide-v86-cache</code> — Системный офлайн-кэш Service Worker, обеспечивающий работу карты и каталога даже при отсутствии сотовой связи.</li>
+            <li><code>planka-guide-v88-cache</code> — Системный офлайн-кэш Service Worker, обеспечивающий работу карты и каталога даже при отсутствии сотовой связи.</li>
           </ul>
 
           <h4 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem;">3. Отказ от коммерческих и поведенческих трекеров</h4>
@@ -2663,7 +2681,39 @@
       </div>
     </div>
   </div>
-<!-- MODAL: SUGGEST A VENUE FOR INSPECTION (100% ZERO PERSONAL DATA COLLECTED - 152-FZ COMPLIANT) -->
+
+  <!-- MODAL: PWA MOBILE INSTALLATION INSTRUCTIONS -->
+  <div id="pwaInstallModal" class="modal-overlay" onclick="closePwaInstallModal()">
+    <div class="modal-box text-center" style="max-width: 440px; padding: 2.25rem;" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+        <h3 class="font-serif" style="font-size: 1.2rem; font-weight: 900; color: inherit;">Установка PWA на телефон</h3>
+        <button onclick="closePwaInstallModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2rem; height: 2rem; border-radius: 9999px; cursor: pointer; font-weight: 900;">✕</button>
+      </div>
+
+      <div style="font-size: 0.8125rem; color: var(--text-body); line-height: 1.6; text-align: left; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem;">
+          <strong style="color: var(--gold-deep); display: block; margin-bottom: 0.35rem; font-size: 0.875rem;">🍏 На iPhone (Safari):</strong>
+          1. Нажмите иконку <strong>«Поделиться»</strong> ⎋ (квадрат со стрелкой вверх) в нижней панели Safari.<br>
+          2. Прокрутите меню вниз и выберите <strong>«На экран «Домой»»</strong> ⊞.<br>
+          3. В правом верхнем углу нажмите <strong>«Добавить»</strong>.
+        </div>
+
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem;">
+          <strong style="color: var(--gold-deep); display: block; margin-bottom: 0.35rem; font-size: 0.875rem;">🤖 На Android (Chrome / Яндекс):</strong>
+          1. Нажмите меню <strong>три точки ⋮</strong> в правом верхнем углу браузера.<br>
+          2. Выберите <strong>«Установить приложение»</strong> или <strong>«Добавить на главный экран»</strong>.
+        </div>
+
+        <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+          После установки иконка гида появится на рабочем столе телефона и будет открываться на весь экран в офлайн-режиме без адресной строки!
+        </p>
+
+        <button type="button" onclick="closePwaInstallModal()" class="btn btn-dark" style="width: 100%; padding: 0.75rem; font-weight: 800;">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SUGGEST A VENUE FOR INSPECTION (100% ZERO PERSONAL DATA COLLECTED - 152-FZ COMPLIANT) -->
   <div id="suggestModal" class="modal-overlay" onclick="closeSuggestModal()">
     <div class="modal-box" style="max-width: 520px; padding: 2.25rem;" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
@@ -2724,7 +2774,7 @@
           <h3 class="font-serif" style="font-size: 1.25rem; font-weight: 900; color: inherit; margin-top: 0.15rem;">Входящие заявки от гостей на аудит</h3>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="syncSuggestionsToGoogleSheet()" type="button" class="btn btn-gold" style="font-size: 0.6875rem; padding: 0.35rem 0.65rem;">📊 Экспорт в Google Таблицу</button>
+          
           <button onclick="closeSuggestionsInboxModal()" type="button" style="background: var(--bg-subtle); border: none; width: 2rem; height: 2rem; border-radius: 9999px; cursor: pointer; font-weight: 900;">✕</button>
         </div>
       </div>
@@ -2957,21 +3007,9 @@
       <strong id="shareVenueTitle" style="font-size: 1.1rem; display: block; color: inherit; margin-bottom: 0.25rem;">White Rabbit</strong>
       <p id="shareVenueDesc" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem;">Москва • Знак Качества 96/100</p>
 
-      <div style="display: flex; flex-direction: column; gap: 0.55rem; width: 100%;">
-        <button onclick="copyShareUrl()" type="button" class="btn btn-dark" style="width: 100%; padding: 0.75rem; font-weight: 700; font-size: 0.8125rem; background: var(--gold-deep); color: #18181B;">
-          Скопировать прямую ссылку
-        </button>
-        <div style="display: flex; gap: 0.5rem;">
-          <button onclick="shareViaVK()" type="button" class="btn btn-light" style="flex: 1; padding: 0.65rem; font-size: 0.75rem; font-weight: 700;">
-            ВКонтакте
-          </button>
-          <button onclick="shareViaTelegram()" type="button" class="btn btn-light" style="flex: 1; padding: 0.65rem; font-size: 0.75rem; font-weight: 700;">
-            Telegram
-          </button>
-        </div>
-        <button id="btnNativeShare" onclick="shareViaNative()" type="button" class="btn btn-light" style="width: 100%; padding: 0.6rem; font-size: 0.75rem; display: none; font-weight: 700;">
-          Поделиться через систему...
-        </button>
+      <div class="flex gap-2" style="flex-wrap: wrap;">
+        <button onclick="copyShareUrl()" type="button" class="btn btn-dark" style="flex: 1; padding: 0.65rem;">📋 Копировать ссылку</button>
+        <button onclick="shareViaTelegram()" type="button" class="btn btn-light" style="flex: 1; padding: 0.65rem;">Telegram ↗</button>
       </div>
     </div>
   </div>
@@ -3361,7 +3399,7 @@
 
     var venues = JSON.parse(JSON.stringify(initialVenues));
     try {
-      var stored = localStorage.getItem('planka_guide_db_v86') || 
+      var stored = localStorage.getItem('planka_guide_db_v88') || 
                    localStorage.getItem('planka_guide_db_v78') || 
                    localStorage.getItem('planka_guide_db_v77') || 
                    localStorage.getItem('planka_guide_db_v76') || 
@@ -3497,7 +3535,7 @@
 
     function saveDB() {
       try {
-        safeSetItem('planka_guide_db_v86', JSON.stringify(venues));
+        safeSetItem('planka_guide_db_v88', JSON.stringify(venues));
       } catch(e) {}
       updateStats();
       renderHeroSlides();
@@ -3844,7 +3882,7 @@
       var badgeMob = document.getElementById('adminSugCountBadgeMobile');
       var count = guestSuggestions.length;
 
-      if (isAdmin && supabaseClient) {
+      if (supabaseClient) {
         try {
           var countRes = await supabaseClient
             .from('suggestions')
@@ -3868,7 +3906,7 @@
 
       var items = guestSuggestions;
 
-      if (isAdmin && supabaseClient) {
+      if (supabaseClient) {
         try {
           // Automatic ranking: Sort by mentions_count (popularity) first, then by recency
           var res = await supabaseClient
@@ -3911,7 +3949,7 @@
           '</div>' +
           '<div class="flex flex-col gap-1.5" style="min-width: 140px;">' +
             '<button type="button" onclick="convertSuggestionToAuditByIndex(' + i + ')" class="btn btn-dark" style="padding: 0.45rem 0.65rem; font-size: 0.6875rem; font-weight: 800; background: var(--gold-deep); color: #18181B;">+ Взять в аудит</button>' +
-            '<button type="button" onclick="deleteSuggestionByIndex(' + i + ')" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.625rem; color: #DC2626;">Удалить заявку</button>' +
+            (isModerator ? ('<button type="button" onclick="deleteSuggestionByIndex(' + i + ')" class="btn btn-light" style="padding: 0.35rem 0.65rem; font-size: 0.625rem; color: #DC2626;">Удалить заявку</button>') : '') +
           '</div>' +
         '</div>';
       }
@@ -3994,16 +4032,6 @@
       var qrImg = document.getElementById('shareQrImage');
       if (qrImg) qrImg.setAttribute('src', qrApiUrl);
 
-      // Check if system Web Share API is available (iOS / Android / macOS / Windows)
-      var nativeBtn = document.getElementById('btnNativeShare');
-      if (nativeBtn) {
-        if (typeof navigator !== 'undefined' && navigator.share) {
-          nativeBtn.style.display = 'block';
-        } else {
-          nativeBtn.style.display = 'none';
-        }
-      }
-
       openModal('shareModal');
     }
 
@@ -4013,52 +4041,29 @@
 
     function copyShareUrl() {
       if (!activeModalVenue) return;
-      var v = activeModalVenue;
-      var shareUrl = window.location.origin + window.location.pathname + '?venue=' + v.id;
+      var shareUrl = window.location.origin + window.location.pathname + '?venue=' + activeModalVenue.id + '#venue-' + activeModalVenue.id;
       if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shareUrl).then(function() {
-          alert('✓ Ссылка на досье заведения «' + v.name + '» скопирована в буфер обмена!');
+          alert('Ссылка на заведение скопирована в буфер обмена!');
         });
       } else {
         alert('Ссылка: ' + shareUrl);
       }
     }
 
-    function shareViaVK() {
-      if (!activeModalVenue) return;
-      var v = activeModalVenue;
-      var shareUrl = window.location.origin + window.location.pathname + '?venue=' + v.id;
-      var title = 'PLANKA GUIDE: ' + v.name + ' (' + v.city + ') — ' + v.total_score + '/100 б.';
-      var vkUrl = 'https://vk.com/share.php?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(title);
-      window.open(vkUrl, '_blank');
-    }
-
     function shareViaTelegram() {
       if (!activeModalVenue) return;
+      var shareUrl = window.location.origin + window.location.pathname + '?venue=' + activeModalVenue.id + '#venue-' + activeModalVenue.id;
       var v = activeModalVenue;
-      var shareUrl = window.location.origin + window.location.pathname + '?venue=' + v.id;
-      var gradeStr = v.total_score >= 90 ? '★ Знак Качества' : (v.total_score >= 75 ? 'Рекомендовано' : 'Внутренний аудит');
+      var gradeStr = v.total_score >= 90 ? '★ ЗНАК КАЧЕСТВА' : (v.total_score >= 75 ? 'Рекомендовано' : 'Внутренний аудит');
       var checkStr = (typeof v.avg_check === 'number' ? v.avg_check : (parseInt(v.avg_check, 10) || 2000)).toLocaleString('ru-RU');
-      var text = 'PLANKA GUIDE | Независимый аудит заведения\n\n' +
-                 v.name + ' (' + v.city + ')\n' +
-                 'Оценка: ' + v.total_score + '/100 б. [' + gradeStr + ']\n' +
-                 'Фирменное блюдо: ' + (v.signature_dish || 'Шеф-меню') + '\n' +
-                 'Средний чек: ' + checkStr + ' ₽\n\n' +
-                 'Досье инспектора:';
+      var text = '🏛 PLANKA GUIDE | Независимый аудит ресторана\n\n' +
+                 '📍 ' + v.name + ' (' + v.city + ')\n' +
+                 '🏆 Оценка: ' + v.total_score + '/100 б. [' + gradeStr + ']\n' +
+                 '🍴 Фирменное блюдо: ' + (v.signature_dish || 'Шеф-меню') + '\n' +
+                 '💳 Средний чек: ' + checkStr + ' ₽\n\n' +
+                 'Смотреть досье тайного инспектора:';
       window.open('https://t.me/share/url?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(text), '_blank');
-    }
-
-    function shareViaNative() {
-      if (!activeModalVenue) return;
-      var v = activeModalVenue;
-      var shareUrl = window.location.origin + window.location.pathname + '?venue=' + v.id;
-      if (typeof navigator !== 'undefined' && navigator.share) {
-        navigator.share({
-          title: 'PLANKA GUIDE — ' + v.name,
-          text: 'Ресторанный аудит PLANKA GUIDE: ' + v.name + ' (' + v.total_score + '/100 б.)',
-          url: shareUrl
-        }).catch(function(){});
-      }
     }
 
     // OFFICIAL A4 CERTIFICATE MODAL
@@ -4799,6 +4804,9 @@
       if (cInp) cInp.value = '';
       var cFlt = document.getElementById('cityFilter');
       if (cFlt) cFlt.value = 'all';
+      var cFltMob = document.getElementById('cityFilterMobile');
+      if (cFltMob) cFltMob.value = 'all';
+
       currentSortMode = 'score_desc';
       currentFormatFilter = 'all';
       currentPriceFilter = 'all';
@@ -4829,6 +4837,14 @@
         if (btns[i].innerText === 'Все категории' || btns[i].innerText === 'Все' || btns[i].innerText === 'Все поводы') btns[i].classList.add('active');
         else btns[i].classList.remove('active');
       }
+      applyFilters();
+    }
+
+    function syncCityMobile(val) {
+      var dCity = document.getElementById('cityFilter');
+      if (dCity) dCity.value = val;
+      var mCity = document.getElementById('cityFilterMobile');
+      if (mCity) mCity.value = val;
       applyFilters();
     }
 
@@ -4863,9 +4879,10 @@
         { name: "Санитария", val: sSanitation, max: 10 }
       ];
 
-      var cx = 160;
-      var cy = 130;
-      var rMax = 85;
+      // WIDENED GEOMETRY & GENEROUS PADDING (Eliminates mobile clipping on right edge)
+      var cx = 210;
+      var cy = 140;
+      var rMax = 72;
 
       var gridSvg = '';
       var gridLevels = [0.25, 0.5, 0.75, 1.0];
@@ -4890,20 +4907,20 @@
         var pAngle = -Math.PI / 2 + j * (2 * Math.PI / 6);
         var xEdge = cx + rMax * Math.cos(pAngle);
         var yEdge = cy + rMax * Math.sin(pAngle);
-        axesSvg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + xEdge.toFixed(1) + '" y2="' + yEdge.toFixed(1) + '" stroke="currentColor" stroke-opacity="0.18" stroke-width="1"/>';
+        axesSvg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + xEdge.toFixed(1) + '" y2="' + yEdge.toFixed(1) + '" stroke="currentColor" stroke-opacity="' + (lvl < 1.0 ? '0.1' : '0.22') + '" stroke-width="1"/>';
 
         var ratio = Math.min(1.0, Math.max(0.0, p.val / p.max));
         var dx = cx + rMax * ratio * Math.cos(pAngle);
         var dy = cy + rMax * ratio * Math.sin(pAngle);
         dataPts.push(dx.toFixed(1) + ',' + dy.toFixed(1));
 
-        var lx = cx + (rMax + 24) * Math.cos(pAngle);
+        var lx = cx + (rMax + 20) * Math.cos(pAngle);
         var ly = cy + (rMax + 14) * Math.sin(pAngle);
         var anchor = "middle";
         if (Math.cos(pAngle) > 0.3) anchor = "start";
         else if (Math.cos(pAngle) < -0.3) anchor = "end";
 
-        labelsSvg += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="9" font-weight="700" fill="currentColor" opacity="0.85">' + p.name + ' <tspan font-weight="900" fill="var(--gold-deep)">' + p.val + '/' + p.max + '</tspan></text>';
+        labelsSvg += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="8.5" font-weight="700" fill="currentColor" opacity="0.9">' + p.name + ' <tspan font-weight="900" fill="var(--gold-deep)">' + p.val + '/' + p.max + '</tspan></text>';
       }
 
       var polySvg = '<polygon points="' + dataPts.join(' ') + '" fill="url(#radarGoldGrad)" stroke="var(--gold-accent)" stroke-width="2.5" stroke-linejoin="round"/>';
@@ -4911,10 +4928,10 @@
       var dotsSvg = '';
       for (var d = 0; d < dataPts.length; d++) {
         var coords = dataPts[d].split(',');
-        dotsSvg += '<circle cx="' + coords[0] + '" cy="' + coords[1] + '" r="3.5" fill="var(--bg-surface)" stroke="var(--gold-accent)" stroke-width="2"/>';
+        dotsSvg += '<circle cx="' + coords[0] + '" cy="' + coords[1] + '" r="' + (d === 0 ? '4' : '3.5') + '" fill="var(--bg-surface)" stroke="var(--gold-accent)" stroke-width="2"/>';
       }
 
-      var fullSvg = '<svg viewBox="0 0 320 260" class="radar-spider-svg" style="width: 100%; height: auto; overflow: visible;">' +
+      var fullSvg = '<svg viewBox="0 0 420 280" class="radar-spider-svg" style="width: 100%; height: auto; max-width: 420px; display: block; margin: 0 auto; overflow: visible;">' +
         '<defs>' +
           '<linearGradient id="radarGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
             '<stop offset="0%" stop-color="#C5A880" stop-opacity="0.5"/>' +
@@ -4928,8 +4945,6 @@
       if (container) container.innerHTML = fullSvg;
     }
 
-    // 1-Click Multi-Platform Review Exporter for Yandex & 2GIS
-    // Render Unified Leaflet Map inside Venue Dossier
     function renderDossierMap(target) {
       if (typeof L === 'undefined') return;
       var mapContainer = document.getElementById('dossierLeafletMap');
@@ -5078,7 +5093,10 @@
       var revBox = document.getElementById('modalReviewExporterBox');
       if (isAdmin) {
         if (revBox) revBox.classList.remove('hidden');
-        if (adminActions) adminActions.classList.remove('hidden');
+        if (adminActions) {
+          if (isModerator) adminActions.classList.remove('hidden');
+          else adminActions.classList.add('hidden');
+        }
         if (authorSection) {
           authorSection.classList.remove('hidden');
           var privEl = document.getElementById('modalPrivateNotes');
@@ -5514,7 +5532,7 @@
         if (indD) indD.classList.remove('hidden');
         if (indM) indM.classList.remove('hidden');
         if (subHeader) subHeader.classList.remove('hidden');
-        if (btnInsp && deferredInstallPrompt) btnInsp.classList.remove('hidden');
+        if (btnInsp) btnInsp.classList.remove('hidden');
       } else {
         if (indD) indD.classList.add('hidden');
         if (indM) indM.classList.add('hidden');
@@ -6021,35 +6039,82 @@
     }
 
     // SEARCH WITH AUTO-SCROLL AND SPOTLIGHT DIMMING
-    function executeHeroSearch() {
+    function executeHeroSearch(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      // Immediately dismiss mobile keyboard so viewport stabilizes
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+
       var sInp = document.getElementById('searchInput');
-      var val = sInp ? (sInp.value || '').trim() : '';
+      var cInp = document.getElementById('catalogSearchInput');
+      var val = ((sInp && sInp.value) ? sInp.value : ((cInp && cInp.value) ? cInp.value : '')).trim();
 
       applyFilters();
 
       if (!val) return;
 
+      // Give 250ms for mobile on-screen keyboard to collapse
       setTimeout(function() {
         var targetCard = document.querySelector('#selectionGrid .selection-card, #venuesRibbonTrack .card, #venuesGridView .card');
         if (targetCard) {
-          targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          applyCardSpotlight(targetCard);
+          // If in selection ribbon track, scroll track to center card horizontally
+          var selTrack = document.getElementById('selectionGrid');
+          if (selTrack && selTrack.contains(targetCard)) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+
+          // Gentle vertical glide
+          gentleScrollToElement(targetCard, function() {
+            applyCardSpotlight(targetCard);
+          });
         } else {
           var noRes = document.getElementById('noResults');
-          if (noRes) noRes.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (noRes) gentleScrollToElement(noRes);
         }
-      }, 150);
+      }, 250);
+    }
+
+    function gentleScrollToElement(el, onComplete) {
+      if (!el) return;
+      var rect = el.getBoundingClientRect();
+      var targetPosition = window.pageYOffset + rect.top - (window.innerHeight / 2) + (rect.height / 2);
+      var startPosition = window.pageYOffset;
+      var distance = targetPosition - startPosition;
+      var duration = 750; // Gentle 750ms animation
+      var start = null;
+
+      function step(timestamp) {
+        if (!start) start = timestamp;
+        var progress = timestamp - start;
+        var timeRatio = Math.min(progress / duration, 1);
+        var ease = timeRatio < 0.5 ? 2 * timeRatio * timeRatio : -1 + (4 - 2 * timeRatio) * timeRatio;
+        window.scrollTo(0, startPosition + distance * ease);
+        if (progress < duration) {
+          window.requestAnimationFrame(step);
+        } else {
+          if (onComplete) onComplete();
+        }
+      }
+      window.requestAnimationFrame(step);
     }
 
     function applyCardSpotlight(cardEl) {
       if (!cardEl) return;
-      var prev = document.querySelectorAll('.card-spotlight-active');
-      for (var i = 0; i < prev.length; i++) prev[i].classList.remove('card-spotlight-active');
+      var overlay = document.getElementById('spotlightOverlay');
+      if (overlay) overlay.classList.add('active');
+
+      var ribbonStage = cardEl.closest('.selection-ribbon-stage');
+      if (ribbonStage) ribbonStage.classList.add('spotlight-elevated');
 
       cardEl.classList.add('card-spotlight-active');
+
       setTimeout(function() {
+        if (overlay) overlay.classList.remove('active');
+        if (ribbonStage) ribbonStage.classList.remove('spotlight-elevated');
         cardEl.classList.remove('card-spotlight-active');
-      }, 3000);
+      }, 3200);
     }
 
     // ==========================================
@@ -6226,6 +6291,10 @@
     }
 
     function editCurrentModalVenue() {
+      if (!isModerator) {
+        alert('Редактирование опубликованных карточек разрешено только Главному модератору.');
+        return;
+      }
       if (!activeModalVenue) return;
       var v = activeModalVenue;
       closeModal('venueModal');
@@ -6272,13 +6341,23 @@
     }
 
     function deleteCurrentModalVenue() {
+      if (!isModerator) {
+        alert('Удаление карточек заведений разрешено только Главному модератору.');
+        return;
+      }
       if (!activeModalVenue) return;
       if (confirm('Удалить заведение "' + activeModalVenue.name + '"?')) {
         var nId = activeModalVenue.id;
-        venues = venues.filter(function(x) { return x.id !== nId; });
+        venues = venues.filter(function(x) { return String(x.id) !== String(nId); });
         saveDB();
+        if (supabaseClient && typeof nId === 'string') {
+          supabaseClient.from('venues').delete().eq('id', nId).then(function(){
+            console.log('✓ Venue deleted from Supabase:', nId);
+          });
+        }
         closeModal('venueModal');
-        alert('Заведение удалено.');
+        applyFilters();
+        alert('Заведение «' + activeModalVenue.name + '» удалено.');
       }
     }
 
@@ -6368,7 +6447,7 @@
         ergonomics_notes: ergoNotesText || "",
         video: currentEditingVideo,
         photos: currentEditingPhotos,
-        private_photos: currentEditingPrivatePhotos,
+        private_photos: uploadedPrivatePhotos,
         pros: prosList,
         cons: consList,
         vibe_tags: vibeList,
@@ -6392,11 +6471,19 @@
         return;
       }
 
-      // 2. Cloud Submission to Supabase (Moderation Queue)
-      var finalDbStatus = (total >= 75) ? 'pending' : 'archived';
+      // 2. Cloud Submission to Supabase
+      var isEditing = !!editId;
+      var finalDbStatus = 'archived';
+
+      if (total >= 75) {
+        if (isModerator) finalDbStatus = 'approved';
+        else finalDbStatus = 'pending';
+      } else {
+        finalDbStatus = 'archived';
+      }
       var uploadedPhotos = currentEditingPhotos.slice();
 
-      // Upload base64 photos to Supabase Storage bucket 'planka-media'
+      // 1. Upload Public Photos to Supabase Storage ('planka-media')
       if (supabaseClient && Array.isArray(currentEditingPhotos)) {
         for (var pIdx = 0; pIdx < currentEditingPhotos.length; pIdx++) {
           var pData = currentEditingPhotos[pIdx];
@@ -6422,8 +6509,46 @@
                 }
               }
             } catch(upErr) {
-              console.warn('Storage upload error for photo ' + pIdx + ':', upErr);
+              console.warn('Storage upload error for public photo ' + pIdx + ':', upErr);
             }
+          }
+        }
+      }
+
+      // 2. Upload Private Inspector Photos to Isolated 'private/' Folder in Storage
+      var uploadedPrivatePhotos = [];
+      if (supabaseClient && Array.isArray(currentEditingPrivatePhotos)) {
+        for (var priIdx = 0; priIdx < currentEditingPrivatePhotos.length; priIdx++) {
+          var priData = currentEditingPrivatePhotos[priIdx];
+          if (priData && priData.indexOf('data:image') === 0) {
+            try {
+              var priMatch = priData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+              if (priMatch) {
+                var priExt = priMatch[1] === 'jpeg' ? 'jpg' : priMatch[1];
+                var priRawB64 = priMatch[2];
+                var priByteChars = atob(priRawB64);
+                var priByteNums = new Array(priByteChars.length);
+                for (var pb = 0; pb < priByteChars.length; pb++) { priByteNums[pb] = priByteChars.charCodeAt(pb); }
+                var priByteArray = new Uint8Array(priByteNums);
+                var priBlob = new Blob([priByteArray], { type: 'image/' + priExt });
+                // Dedicated isolated private folder
+                var priFileName = 'private/audit_private_' + Date.now() + '_' + priIdx + '.' + priExt;
+
+                var priUploadRes = await supabaseClient.storage.from('planka-media').upload(priFileName, priBlob, { contentType: 'image/' + priExt });
+                if (!priUploadRes.error && priUploadRes.data) {
+                  var priPublicUrlRes = supabaseClient.storage.from('planka-media').getPublicUrl(priFileName);
+                  if (priPublicUrlRes && priPublicUrlRes.data && priPublicUrlRes.data.publicUrl) {
+                    uploadedPrivatePhotos.push(priPublicUrlRes.data.publicUrl);
+                  }
+                } else if (priUploadRes.error) {
+                  console.warn('Private storage upload notice:', priUploadRes.error);
+                }
+              }
+            } catch(priUpErr) {
+              console.warn('Private storage upload exception:', priUpErr);
+            }
+          } else if (priData && typeof priData === 'string' && priData.indexOf('http') === 0) {
+            uploadedPrivatePhotos.push(priData);
           }
         }
       }
@@ -6465,7 +6590,7 @@
           ergonomics_notes: ergoNotesText || "",
           video: currentEditingVideo,
           photos: uploadedPhotos,
-          private_photos: currentEditingPrivatePhotos,
+          private_photos: uploadedPrivatePhotos,
           pros: prosList,
           cons: consList,
           vibe_tags: vibeList,
@@ -6475,26 +6600,67 @@
 
       if (supabaseClient) {
         try {
-          var insertRes = await supabaseClient.from('venues').insert([auditPayload]);
-          if (insertRes.error) {
-            console.error('Supabase insert error:', insertRes.error);
-            venues.unshift(draftRecord);
-            saveDB();
-            updateStats();
-            closeAuditEditorModal();
-            alert('⚠️ Ошибка отправки в облачную базу: ' + insertRes.error.message + '\n\nОтчёт «' + nameVal + '» надёжно сохранён в раздел «Черновики» на вашем устройстве.');
-            return;
+          if (isEditing) {
+            var updateRes = await supabaseClient
+              .from('venues')
+              .update(auditPayload)
+              .eq('id', editId);
+
+            if (updateRes.error) {
+              console.error('Supabase update error:', updateRes.error);
+              alert('⚠️ Ошибка обновления в базе данных: ' + updateRes.error.message);
+              return;
+            }
+            console.log('✓ Venue updated in Supabase successfully with status:', finalDbStatus);
+          } else {
+            var insertRes = await supabaseClient.from('venues').insert([auditPayload]);
+            if (insertRes.error) {
+              console.error('Supabase insert error:', insertRes.error);
+              venues.unshift(draftRecord);
+              saveDB();
+              updateStats();
+              closeAuditEditorModal();
+              alert('⚠️ Ошибка отправки в облачную базу: ' + insertRes.error.message + '\n\nОтчёт «' + nameVal + '» сохранён в «Черновики» на вашем устройстве.');
+              return;
+            }
+            console.log('✓ Audit inserted to Supabase with status:', finalDbStatus);
           }
-          console.log('✓ Audit inserted to Supabase with status:', finalDbStatus);
         } catch(netErr) {
           console.warn('Network error when sending to Supabase:', netErr);
-          venues.unshift(draftRecord);
-          saveDB();
-          updateStats();
-          closeAuditEditorModal();
-          alert('⚠️ Ошибка сети при отправке: ' + netErr.message + '\n\nОтчёт «' + nameVal + '» сохранён в «Черновики» на устройстве.');
-          return;
         }
+      }
+
+      if (isEditing) {
+        for (var di = 0; di < venues.length; di++) {
+          if (String(venues[di].id) === String(editId)) {
+            venues[di].name = nameVal;
+            venues[di].city = cityVal;
+            venues[di].format = document.getElementById('formFormat').value;
+            venues[di].address = addrText;
+            venues[di].avg_check = checkVal;
+            venues[di].price_tier = priceTier;
+            venues[di].scores = { food: bFood, wow: bWow, price: bPrice, service: bService, space: bSpace, sanitation: bSanitation };
+            venues[di].total_score = total;
+            venues[di].status = finalDbStatus;
+            venues[di].grade = grade;
+            venues[di].value_score = vScore;
+            venues[di].signature_dish = dishVal;
+            venues[di].dish_review = document.getElementById('formDishReview').value || "";
+            venues[di].full_review = fullRevText || "";
+            venues[di].photos = uploadedPhotos;
+            venues[di].details = auditPayload.details;
+            break;
+          }
+        }
+        saveDB();
+        closeAuditEditorModal();
+        applyFilters();
+        if (total < 75) {
+          alert('📁 Заведение «' + nameVal + '» переведено в статус АРХИВ (' + total + ' б. < 75 б.) и скрыто из открытого гида.');
+        } else {
+          alert('✓ Карточка заведения «' + nameVal + '» успешно обновлена в базе данных (' + total + ' б., ' + finalDbStatus + ').');
+        }
+        return;
       } else {
         venues.unshift(draftRecord);
         saveDB();
@@ -6572,15 +6738,20 @@
         deferredInstallPrompt.prompt();
         deferredInstallPrompt.userChoice.then(function(choiceResult) {
           if (choiceResult.outcome === 'accepted') {
-            console.log('Inspector accepted PWA installation');
+            console.log('User accepted PWA installation');
           }
           deferredInstallPrompt = null;
-          var btnInsp = document.getElementById('btnInstallAppInspector');
-          if (btnInsp) btnInsp.classList.add('hidden');
         });
       } else {
-        alert('Для установки служебного приложения PLANKA GUIDE на iPhone/iPad нажмите кнопку «Поделиться» в браузере Safari и выберите «На экран «Домой»». На Android используйте меню браузера «Установить приложение».');
+        openPwaInstallModal();
       }
+    }
+
+    function openPwaInstallModal() {
+      openModal('pwaInstallModal');
+    }
+    function closePwaInstallModal() {
+      closeModal('pwaInstallModal');
     }
 
     // Distinct Offline status tracking (Guest vs Inspector)
@@ -11996,6 +12167,24 @@
     }
 
     // ASYNC CLOUD DATABASE SYNC FROM SUPABASE (STRICT 75+ & APPROVED ONLY)
+    
+    // INSTANT CLOUD SYNC ON TAB FOCUS / VISIBILITY RESTORATION
+    window.addEventListener('focus', function() {
+      if (supabaseClient) {
+        console.log('Tab focused -> syncing latest updates from Supabase...');
+        syncFromSupabase();
+        if (isAdmin && isModerator) renderModeratorQueue();
+      }
+    });
+
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && supabaseClient) {
+        console.log('Page visible -> syncing latest updates from Supabase...');
+        syncFromSupabase();
+        if (isAdmin && isModerator) renderModeratorQueue();
+      }
+    });
+
     async function syncFromSupabase() {
       if (!supabaseClient) return;
       try {
@@ -12003,8 +12192,7 @@
         var res = await supabaseClient
           .from('venues')
           .select('*')
-          .or('status.eq.approved,status.eq.published')
-          .gte('total_score', 75)
+          .or('status.ilike.approved,status.ilike.published')
           .order('total_score', { ascending: false });
 
         if (!res.error && Array.isArray(res.data) && res.data.length > 0) {
@@ -12018,7 +12206,8 @@
             v.address = item.address || v.address || 'Адрес не указан';
             v.scores = item.scores || v.scores || { food: 30, wow: 14, price: 14, service: 14, space: 9, sanitation: 9 };
             v.total_score = Number(item.total_score) || Number(v.total_score) || 80;
-            v.status = item.status || 'approved';
+            // Case-insensitive status normalization
+            v.status = (item.status || v.status || 'approved').toLowerCase().trim();
             
             // Numerical safety for average check
             var rawCheck = (v.avg_check !== undefined && v.avg_check !== null) ? v.avg_check : 2000;
@@ -12029,7 +12218,7 @@
             v.value_score = (v.value_score !== undefined && v.value_score !== null) ? Number(v.value_score) : 8.5;
             
             v.photos = (item.media_urls && Array.isArray(item.media_urls) && item.media_urls.length > 0) ? item.media_urls : (v.photos || []);
-            v.private_photos = v.private_photos || [];
+            v.private_photos = (item.details && Array.isArray(item.details.private_photos) && item.details.private_photos.length > 0) ? item.details.private_photos : (v.private_photos || []);
             v.signature_dish = v.signature_dish || 'Фирменное блюдо';
             v.dish_review = v.dish_review || '';
             v.full_review = item.review || v.full_review || '';
@@ -12048,7 +12237,7 @@
           // Deduplicate remote venues and local drafts by name and ID
           var combined = remoteVenues.concat(draftList);
           venues = deduplicateVenues(combined);
-          safeSetItem('planka_guide_db_v86', JSON.stringify(venues));
+          safeSetItem('planka_guide_db_v88', JSON.stringify(venues));
           renderHeroSlides();
           renderSelection();
           renderVenues();
